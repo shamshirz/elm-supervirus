@@ -1,61 +1,69 @@
 module Main exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import AnimationFrame
+import Clock exposing (Clock)
+import Model exposing (Msg(..))
+import Location
+import Keys
+import View exposing (display, playZone)
+import Html exposing (div)
+import Html exposing (Html)
+import Keyboard exposing (..)
+import Time exposing (Time)
 
 
--- component import example
-
-import Components.Hello exposing (hello)
-
-
--- APP
-
-
-main : Program Never Int Msg
+main : Program Never Model.Model Msg
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
+    Html.program
+        { init = Model.init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 
--- MODEL
+-- SUBSCRIPTIONS
 
 
-type alias Model =
-    Int
-
-
-model : number
-model =
-    0
+subscriptions : Model.Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Keyboard.downs KeyDown
+        , Keyboard.ups KeyUp
+        , AnimationFrame.diffs TimeDelta
+        ]
 
 
 
 -- UPDATE
 
 
-type Msg
-    = NoOp
-    | Increment
-
-
-update : Msg -> Model -> Model
+update : Msg -> Model.Model -> ( Model.Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            model
+        TimeDelta dt ->
+            let
+                ( clock, newModel ) =
+                    Clock.update tick dt model.clock model
+            in
+                { newModel | clock = clock } ! []
 
-        Increment ->
-            model + 1
+        KeyDown keyNum ->
+            { model | keys = Keys.updateKeys (Keys.Down keyNum) model.keys } ! []
+
+        KeyUp keyNum ->
+            { model | keys = Keys.updateKeys (Keys.Up keyNum) model.keys } ! []
 
 
-view : Model -> Html Msg
-view model =
-    div [ class "flex-column-center" ]
-        [ img [ src "static/img/elm.jpg" ] []
-        , hello model
-        , p [] [ text ("Elm Webpack Starter") ]
-        , button [ onClick Increment ]
-            [ text "FTEW!" ]
+tick : Time -> Model.Model -> Model.Model
+tick _ model =
+    Model.updateLocation model
+
+
+view : Model.Model -> Html Msg
+view ({ location } as model) =
+    div []
+        [ display model
+        , playZone (Location.unwrapLocation location)
         ]
