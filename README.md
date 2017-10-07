@@ -1,20 +1,34 @@
-# elm-webpack-starter
+# elm-supervirus
+
+## About:
+
+Best Port. Only Port.
+Cheggit - [Supervirus](http://samgqroberts.com/sylverstudios/games/supervirus/)
 
 
-Slightly slimmer version of [elm-webpack-starter](https://github.com/elm-community/elm-webpack-starter)
+The original was having some keyboard issues, so this is intended to relieve that pain by completely rewriting the entire project.
+
+Makin' gaimz.
+
+## Status Check!
+
+### Working stuff
+ * `wsad` keys are sending messages!
+ * View is displaying model!
 
 
-### About:
-A simple Webpack setup for writing [Elm](http://elm-lang.org/) apps:
+### Next up
+ * Replace favicon & only page
+ * Boundaries
+ * Enemies
+ * Collision detection
+ * Music
+ * Sound effects
+ * Release
+ * ???
+ * Gromit!
 
-* Dev server with live reloading, HMR
-* Support for CSS/SCSS (with Autoprefixer), image assets
-* Bundling and minification for deployment
-* Basic app scaffold, using `Html.beginnerProgram`
-* A snippet of example code to get you started!
-
-
-### Do stuff
+## Do stuff
 
 * Just once
   * `npm install -g elm elm-format yarn`
@@ -24,16 +38,3 @@ A simple Webpack setup for writing [Elm](http://elm-lang.org/) apps:
   * `npm start`
 * Build a prod version (minified)
   * `npm run build`
-
-
-### Tweaks to Original
-
-* Add `prep`, remove the global uninstall/reinstall
-  * Does yarn install and elm package install. Save the lock file
-* Removed rimraf, bootstrap, jquery
-
-
-### TODO
-
-* Slim down the webpack config, confusingAF rn
-

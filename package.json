@@ -1,12 +1,12 @@
 {
-  "name": "elm-kit",
-  "description": "Webpack setup for writing Elm apps",
+  "name": "elm-supervirus",
+  "description": "Supervirus port in elm - browser game",
   "version": "0.0.1",
   "license": "MIT",
   "author": "Aaron Votre",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shamshirz/elm-kit"
+    "url": "https://github.com/shamshirz/elm-supervirus"
   },
   "scripts": {
     "start": "webpack-dev-server --hot --inline",
