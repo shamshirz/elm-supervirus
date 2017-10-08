@@ -1,57 +1,60 @@
-module Keys exposing (Keys, Key(..), updateKeys, init)
+module Keys exposing (Keys, GameKey(..), updateKeys, init, updateFromKeyCode, pressedKeys)
 
-import Char exposing (fromCode)
+import Char exposing (fromCode, KeyCode)
+import EveryDict exposing (EveryDict)
 
 
-type Key
-    = Down Int
-    | Up Int
+--  I'm not really using the 'value' in this dict, key existance is kind of all that matters rn
+
+
+type GameKey
+    = Left
+    | Right
+    | Up
+    | Down
+
+
+type alias Pressed =
+    Bool
 
 
 type alias Keys =
-    { down : Bool
-    , left : Bool
-    , right : Bool
-    , up : Bool
-    }
+    EveryDict GameKey Pressed
 
 
 init : Keys
 init =
-    { down = False
-    , left = False
-    , right = False
-    , up = False
-    }
+    EveryDict.empty
 
 
-updateKeys : Key -> Keys -> Keys
-updateKeys key keys =
-    case key of
-        Down keyCode ->
-            keys
-                |> applyKeyChange keyCode True
-
-        Up keyCode ->
-            keys
-                |> applyKeyChange keyCode False
+updateKeys : GameKey -> Pressed -> Keys -> Keys
+updateKeys key pressed dict =
+    if pressed then
+        EveryDict.insert key pressed dict
+    else
+        EveryDict.remove key dict
 
 
-applyKeyChange : Int -> Bool -> Keys -> Keys
-applyKeyChange keyCode pressed currentKeys =
+updateFromKeyCode : Int -> Pressed -> Keys -> Keys
+updateFromKeyCode keyCode pressed currentKeys =
     case fromCode keyCode of
         'A' ->
-            { currentKeys | left = pressed }
+            updateKeys Left pressed currentKeys
 
         'W' ->
-            { currentKeys | up = pressed }
+            updateKeys Up pressed currentKeys
 
         'S' ->
-            { currentKeys | down = pressed }
+            updateKeys Down pressed currentKeys
 
         'D' ->
-            { currentKeys | right = pressed }
+            updateKeys Right pressed currentKeys
 
         -- For some reason, we don't catch arrow keys...growl
         _ ->
             currentKeys
+
+
+pressedKeys : Keys -> List GameKey
+pressedKeys keys =
+    EveryDict.keys keys

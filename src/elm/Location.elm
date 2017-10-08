@@ -7,10 +7,22 @@ type alias Vector =
     }
 
 
+toVector : ( Float, Float ) -> Vector
+toVector ( x, y ) =
+    { dx = Magnitude x
+    , dy = Magnitude y
+    }
+
+
 type alias Location =
     { x : Coordinate
     , y : Coordinate
     }
+
+
+defaultBoundary : Float
+defaultBoundary =
+    200
 
 
 unwrapLocation : Location -> { x : Float, y : Float }
@@ -47,4 +59,16 @@ applyVector { dx, dy } { x, y } =
 
 applyMagnitude : Coordinate -> Magnitude -> Coordinate
 applyMagnitude (Coordinate pos) (Magnitude impulse) =
-    Coordinate (pos + impulse)
+    let
+        attemptedPos =
+            pos + impulse
+
+        actualPosition =
+            if attemptedPos > defaultBoundary then
+                defaultBoundary
+            else if attemptedPos < (defaultBoundary * -1) then
+                defaultBoundary * -1
+            else
+                attemptedPos
+    in
+        Coordinate (actualPosition)
