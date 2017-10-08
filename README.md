@@ -18,8 +18,8 @@ Makin' gaimz.
 
 
 ### Next up
- * Replace favicon & only page
- * Boundaries
+ * ~~Replace favicon & only page~~
+ * ~~Boundaries~~
  * Enemies
  * Collision detection
  * Music
