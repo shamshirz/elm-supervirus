@@ -57,8 +57,8 @@ buildVector keys =
 
         y =
             0
-                |> addIfTrue keys.up -1
-                |> addIfTrue keys.down 1
+                |> addIfTrue keys.up 1
+                |> addIfTrue keys.down -1
     in
         { dx = Location.Magnitude x
         , dy = Location.Magnitude y

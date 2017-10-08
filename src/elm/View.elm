@@ -1,9 +1,10 @@
-module View exposing (display, playZone)
+module View exposing (display, draw)
 
-import Model exposing (Model, Msg(..))
+import Color exposing (..)
+import Collage
+import Element
 import Html exposing (Html, button, div, p, br, text, span, Attribute)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Model exposing (Model, Msg(..))
 
 
 display : Model -> Html Msg
@@ -16,10 +17,23 @@ display model =
         ]
 
 
-playZone : { x : Float, y : Float } -> Html msg
-playZone { x, y } =
-    div [ class "play-zone" ]
-        [ Svg.svg [ Svg.Attributes.viewBox "0 0 100 100", Svg.Attributes.width "300px" ]
-            [ circle [ cx <| toString x, cy <| toString y, r "5", stroke "blue", fill "blue" ] []
-            ]
-        ]
+type alias Drawable a =
+    { a | x : Float, y : Float }
+
+
+
+-- elm graphics implementation
+
+
+draw : List (Drawable a) -> Html msg
+draw drawables =
+    Element.toHtml <|
+        Collage.collage 500 500 <|
+            List.map drawableToForm drawables
+
+
+drawableToForm : Drawable a -> Collage.Form
+drawableToForm drawable =
+    Collage.oval 10 10
+        |> Collage.filled Color.blue
+        |> Collage.move ( drawable.x, drawable.y )

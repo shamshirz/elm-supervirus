@@ -5,7 +5,7 @@ import Clock exposing (Clock)
 import Model exposing (Msg(..))
 import Location
 import Keys
-import View exposing (display, playZone)
+import View exposing (display, draw)
 import Html exposing (div)
 import Html exposing (Html)
 import Keyboard exposing (..)
@@ -65,5 +65,5 @@ view : Model.Model -> Html Msg
 view ({ location } as model) =
     div []
         [ display model
-        , playZone (Location.unwrapLocation location)
+        , draw [ (Location.unwrapLocation location) ]
         ]
