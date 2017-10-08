@@ -50,10 +50,10 @@ update msg model =
                 { newModel | clock = clock } ! []
 
         KeyDown keyNum ->
-            { model | keys = Keys.updateKeys (Keys.Down keyNum) model.keys } ! []
+            { model | keys = Keys.updateFromKeyCode keyNum True model.keys } ! []
 
         KeyUp keyNum ->
-            { model | keys = Keys.updateKeys (Keys.Up keyNum) model.keys } ! []
+            { model | keys = Keys.updateFromKeyCode keyNum False model.keys } ! []
 
 
 tick : Time -> Model.Model -> Model.Model

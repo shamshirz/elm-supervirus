@@ -2,7 +2,7 @@ module Model exposing (..)
 
 import Clock exposing (Clock)
 import Location
-import Keys
+import Keys exposing (GameKey(..))
 import Time exposing (Time)
 
 
@@ -40,34 +40,32 @@ updateLocation : Model -> Model
 updateLocation { clock, keys, location } =
     let
         vector =
-            buildVector keys
+            keysToVector keys
     in
         location
             |> Location.applyVector vector
             |> Model clock keys
 
 
-buildVector : Keys.Keys -> Location.Vector
-buildVector keys =
-    let
-        x =
-            0
-                |> addIfTrue keys.right 1
-                |> addIfTrue keys.left -1
-
-        y =
-            0
-                |> addIfTrue keys.up 1
-                |> addIfTrue keys.down -1
-    in
-        { dx = Location.Magnitude x
-        , dy = Location.Magnitude y
-        }
+keysToVector : Keys.Keys -> Location.Vector
+keysToVector keysDict =
+    keysDict
+        |> Keys.pressedKeys
+        |> List.foldr foldKey ( 0, 0 )
+        |> Location.toVector
 
 
-addIfTrue : Bool -> Float -> Float -> Float
-addIfTrue isTrue delta current =
-    if isTrue then
-        current + delta
-    else
-        current
+foldKey : Keys.GameKey -> ( Float, Float ) -> ( Float, Float )
+foldKey key ( x, y ) =
+    case key of
+        Down ->
+            ( x, y - 1 )
+
+        Left ->
+            ( x - 1, y )
+
+        Right ->
+            ( x + 1, y )
+
+        Up ->
+            ( x, y + 1 )
