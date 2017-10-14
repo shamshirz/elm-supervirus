@@ -5,7 +5,7 @@ import Clock exposing (Clock)
 import Model exposing (Msg(..))
 import Location
 import Keys
-import View exposing (display, draw)
+import View exposing (view)
 import Html exposing (div)
 import Html exposing (Html)
 import Keyboard exposing (..)
@@ -59,11 +59,3 @@ update msg model =
 tick : Time -> Model.Model -> Model.Model
 tick _ model =
     Model.updateLocation model
-
-
-view : Model.Model -> Html Msg
-view ({ location } as model) =
-    div []
-        [ display model
-        , draw [ (Location.unwrapLocation location) ]
-        ]

@@ -24,6 +24,7 @@ type alias Model =
     { clock : Clock
     , keys : Keys.Keys
     , location : Location.Location
+    , npcs : List Location.Location
     }
 
 
@@ -32,19 +33,29 @@ init =
     { clock = Clock.withPeriod gameLoopPeriod
     , keys = Keys.init
     , location = Location.init
+    , npcs = [ Location.init ]
     }
         ! []
 
 
 updateLocation : Model -> Model
-updateLocation { clock, keys, location } =
-    let
-        vector =
-            keysToVector keys
-    in
-        location
-            |> Location.applyVector vector
-            |> Model clock keys
+updateLocation ({ keys } as model) =
+    model
+        |> applyPlayerVector (keysToVector keys)
+        |> applyNpcVectors
+
+
+applyPlayerVector : Location.Vector -> Model -> Model
+applyPlayerVector vector model =
+    { model | location = Location.applyVector vector model.location }
+
+
+{-| applyNpcVectors
+here we can do some logic for how the npcs behave
+-}
+applyNpcVectors : Model -> Model
+applyNpcVectors model =
+    model
 
 
 keysToVector : Keys.Keys -> Location.Vector
