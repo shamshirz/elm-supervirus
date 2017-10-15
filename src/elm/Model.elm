@@ -32,8 +32,8 @@ init : ( Model, Cmd Msg )
 init =
     { clock = Clock.withPeriod gameLoopPeriod
     , keys = Keys.init
-    , location = Location.init
-    , npcs = [ Location.init ]
+    , location = Location.center
+    , npcs = [ Location.center ]
     }
         ! []
 
@@ -63,7 +63,7 @@ keysToVector keysDict =
     keysDict
         |> Keys.pressedKeys
         |> List.foldr foldKey ( 0, 0 )
-        |> Location.toVector
+        |> Location.tupleToVector
 
 
 foldKey : Keys.GameKey -> ( Float, Float ) -> ( Float, Float )

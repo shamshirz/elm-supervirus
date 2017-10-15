@@ -4,17 +4,8 @@ import Color exposing (..)
 import Collage
 import Element
 import Html exposing (Html, button, div, p, br, text, span, Attribute)
-import Location
+import Location exposing (Location)
 import Model exposing (Model, Msg(..))
-
-
--- Testing
-
-import Collision2D exposing (circle, Circle, circleToCircle)
-
-
-type alias Drawable a =
-    { a | x : Float, y : Float }
 
 
 view : Model.Model -> Html Msg
@@ -41,7 +32,7 @@ display model =
 -- Do some logic (is collision? and what happens if so?)
 
 
-type alias VeryDrawable =
+type alias Drawable =
     { x : Float
     , y : Float
     , r : Float
@@ -60,31 +51,27 @@ drawCharacters model =
         npcs =
             List.map npc model.npcs
     in
-        betterDraw (main :: npcs)
+        draw (main :: npcs)
 
 
-betterDraw : List VeryDrawable -> Html msg
-betterDraw veryDrawables =
+draw : List Drawable -> Html msg
+draw drawables =
     Element.toHtml <|
         Collage.collage 500 500 <|
-            (List.map toCollageForm veryDrawables)
+            (List.map toCollageForm drawables)
 
 
-player : Location.Location -> VeryDrawable
-player location =
-    location
-        |> Location.unwrapLocation
-        |> (\loc -> VeryDrawable loc.x loc.y 10 Color.blue)
+player : Location.Location -> Drawable
+player { x, y } =
+    Drawable x y 10 Color.blue
 
 
-npc : Location.Location -> VeryDrawable
-npc location =
-    location
-        |> Location.unwrapLocation
-        |> (\loc -> VeryDrawable loc.x loc.y 10 Color.green)
+npc : Location.Location -> Drawable
+npc { x, y } =
+    Drawable x y 10 Color.green
 
 
-toCollageForm : VeryDrawable -> Collage.Form
+toCollageForm : Drawable -> Collage.Form
 toCollageForm { x, y, r, color } =
     Collage.oval r r
         |> Collage.filled color
@@ -93,32 +80,7 @@ toCollageForm { x, y, r, color } =
 
 playerColor : Model -> Color.Color
 playerColor model =
-    if playerInCollision model then
+    if not <| List.isEmpty <| Location.playerCollisions model.location model.npcs then
         Color.red
     else
         Color.blue
-
-
-{-| playerInCollision
-Compares the player against all other Npcs to detect
-a collision. Currently returning a Bool, but could easily
-return the list of collisions.
--}
-playerInCollision : Model -> Bool
-playerInCollision model =
-    let
-        player =
-            locationToCircle model.location
-    in
-        model.npcs
-            |> List.map locationToCircle
-            |> List.filter (circleToCircle player)
-            |> List.isEmpty
-            |> not
-
-
-locationToCircle : Location.Location -> Circle
-locationToCircle location =
-    location
-        |> Location.unwrapLocation
-        |> (\xNy -> circle xNy.x xNy.y 5)
