@@ -13,14 +13,9 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 // entry and output path/filename variables
 const entryPath = path.join(__dirname, 'src/static/index.js');
 const outputPath = path.join(__dirname, 'dist');
-const outputFilename = isProd ? '[name]-[hash].js' : '[name].js'
 
 // common webpack config (valid for dev and prod)
 var commonConfig = {
-    output: {
-        path: outputPath,
-        filename: `static/js/${outputFilename}`,
-    },
     resolve: {
         extensions: ['.js', '.elm'],
         modules: ['node_modules']
@@ -46,8 +41,23 @@ var commonConfig = {
     ]
 }
 
+const elmLoader = (isProd) => {
+    return {
+        test: /\.elm$/,
+        exclude: [/elm-stuff/, /node_modules/],
+        use: [{
+            loader: 'elm-webpack-loader',
+            options: isProd ? {} : { verbose: true, warn: true, debug: true }
+        }]
+    }
+}
+
 const devSpecific = {
     entry: [entryPath, 'webpack-dev-server/client?http://localhost:8080'],
+    output: {
+        path: outputPath,
+        filename: `static/js/[name].js`,
+    },
     devServer: {
         // serve index.html in place of 404 responses
         historyApiFallback: true,
@@ -55,32 +65,20 @@ const devSpecific = {
         hot: true
     },
     module: {
-        rules: [{
-            test: /\.elm$/,
-            exclude: [/elm-stuff/, /node_modules/],
-            use: [{
-                loader: 'elm-webpack-loader',
-                options: {
-                    verbose: true,
-                    warn: true,
-                    debug: true
-                }
-            }]
-        },{
-            test: /\.sc?ss$/,
-            use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']
-        }]
+        rules: [elmLoader(false),
+            { test: /\.sc?ss$/, use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']}
+        ]
     }
 };
 
 const prodSpecific = {
     entry: entryPath,
+    output: {
+        path: outputPath,
+        filename: `static/js/[name]-[hash].js`,
+    },
     module: {
-        rules: [{
-            test: /\.elm$/,
-            exclude: [/elm-stuff/, /node_modules/],
-            use: 'elm-webpack-loader'
-        }, {
+        rules: [elmLoader(true), {
             test: /\.sc?ss$/,
             use: ExtractTextPlugin.extract({
                 fallback: 'style-loader',
@@ -99,9 +97,6 @@ const prodSpecific = {
         }, {
             from: 'src/favicon.ico'
         }]),
-
-        // extract CSS into a separate file
-        // minify JS/CSS
         new webpack.optimize.UglifyJsPlugin({
             minimize: true,
             compressor: {
