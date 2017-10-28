@@ -19,9 +19,9 @@ Makin' gaimz.
 
 ### Next up
  * ~~Replace favicon & only page~~
- * ~~Boundaries~~
+ * ~~Collision detection~~
+ * Boundaries
  * Enemies
- * Collision detection
  * Music
  * Sound effects
  * Release
@@ -35,6 +35,6 @@ Makin' gaimz.
 * Whenever you change a dependency
   * `npm run prep`
 * When you're working
-  * `npm start`
+  * `npm run start`
 * Build a prod version (minified)
-  * `npm run build`
+  * `npm run deploy`

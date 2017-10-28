@@ -11,7 +11,7 @@
   "scripts": {
     "start": "webpack-dev-server --hot --inline",
     "prep": "yarn install && elm-package install",
-    "build": "./node_modules/webpack/bin/webpack.js"
+    "deploy": "./node_modules/webpack/bin/webpack.js -p --env.prod"
   },
   "devDependencies": {
     "autoprefixer": "^6.7.7",
