@@ -1,15 +1,17 @@
 {
-    "version": "0.0.1",
-    "summary": "Supervirus port in elm - browser game",
+    "version": "1.0.0",
+    "summary": "Test Suites",
     "repository": "https://github.com/shamshirz/elm-supervirus.git",
     "license": "MIT",
     "source-directories": [
-        "src/elm"
+        "../src/elm",
+        "."
     ],
     "exposed-modules": [],
     "dependencies": {
         "burabure/elm-collision": "2.0.3 <= v < 3.0.0",
         "eeue56/elm-all-dict": "2.0.1 <= v < 3.0.0",
+        "eeue56/elm-html-test": "5.1.1 <= v < 6.0.0",
         "elm-community/elm-test": "4.2.0 <= v < 5.0.0",
         "elm-lang/animation-frame": "1.0.1 <= v < 2.0.0",
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
