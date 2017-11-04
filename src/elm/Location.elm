@@ -1,6 +1,41 @@
-module Location exposing (..)
+module Location
+    exposing
+        ( applyVector
+        , center
+        , isCollision
+        , Location
+        , npcStart
+        , playerCollisions
+        , playerStart
+        , tupleToVector
+        , Vector
+        )
 
 import Collision2D exposing (circle, Circle, circleToCircle)
+
+
+-- Types & Constructors
+
+
+type alias Vector =
+    { dx : Float
+    , dy : Float
+    }
+
+
+tupleToVector : ( Float, Float ) -> Vector
+tupleToVector ( x, y ) =
+    Vector x y
+
+
+type alias Location =
+    { x : Float
+    , y : Float
+    }
+
+
+
+-- Defaults
 
 
 radius : Float
@@ -10,19 +45,7 @@ radius =
 
 boundary : Circle
 boundary =
-    circle 0 0 200
-
-
-type alias Vector =
-    { dx : Float
-    , dy : Float
-    }
-
-
-type alias Location =
-    { x : Float
-    , y : Float
-    }
+    circle 0 0 40
 
 
 center : Location
@@ -30,14 +53,34 @@ center =
     Location 0 0
 
 
+
+-- Actual functions
+
+
+playerStart : Location
+playerStart =
+    center
+
+
+{-| npcStart
+These should ideally be random
+-}
+npcStart : Location
+npcStart =
+    Location 10 10
+
+
 applyVector : Vector -> Location -> Location
 applyVector { dx, dy } { x, y } =
-    Location (x + dx) (y + dy)
-
-
-tupleToVector : ( Float, Float ) -> Vector
-tupleToVector ( x, y ) =
-    Vector x y
+    let
+        newLocation =
+            Location (x + dx) (y + dy)
+    in
+        if circleToCircle (locationToCircle newLocation) boundary then
+            -- Find the closest possible location without colliding
+            newLocation
+        else
+            Location x y
 
 
 

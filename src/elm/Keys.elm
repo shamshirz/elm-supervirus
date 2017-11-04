@@ -1,4 +1,13 @@
-module Keys exposing (Keys, GameKey(..), updateKeys, init, updateFromKeyCode, pressedKeys)
+module Keys
+    exposing
+        ( GameKey(..)
+        , init
+        , Keys
+        , keysToTuple
+        , pressedKeys
+        , updateFromKeyCode
+        , updateKeys
+        )
 
 import Char exposing (fromCode, KeyCode)
 import EveryDict exposing (EveryDict)
@@ -58,3 +67,26 @@ updateFromKeyCode keyCode pressed currentKeys =
 pressedKeys : Keys -> List GameKey
 pressedKeys keys =
     EveryDict.keys keys
+
+
+keysToTuple : Keys -> ( Float, Float )
+keysToTuple keys =
+    keys
+        |> pressedKeys
+        |> List.foldr foldKey ( 0, 0 )
+
+
+foldKey : GameKey -> ( Float, Float ) -> ( Float, Float )
+foldKey key ( x, y ) =
+    case key of
+        Down ->
+            ( x, y - 1 )
+
+        Left ->
+            ( x - 1, y )
+
+        Right ->
+            ( x + 1, y )
+
+        Up ->
+            ( x, y + 1 )
