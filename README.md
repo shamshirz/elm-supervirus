@@ -20,8 +20,14 @@ Makin' gaimz.
 ### Next up
  * ~~Replace favicon & only page~~
  * ~~Collision detection~~
- * Boundaries
- * Enemies
+ * ~~Boundaries~~
+ * ~~Scoring~~
+ * Smooth borders
+ * Enemy Spawning
+ * Enemy Movement
+ * Improve scoring
+ * Viewport?
+ * GameOver View
  * Music
  * Sound effects
  * Release
@@ -36,5 +42,7 @@ Makin' gaimz.
   * `npm run prep`
 * When you're working
   * `npm run start`
+* Tests (from Root)
+  * `elm-test`
 * Build a prod version (minified)
   * `npm run deploy`
