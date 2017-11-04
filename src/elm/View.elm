@@ -4,24 +4,34 @@ import Color exposing (..)
 import Collage
 import Element
 import Html exposing (Html, button, div, p, br, text, span, Attribute)
-import Location exposing (Location)
-import Model exposing (Model, Msg(..))
+import Model exposing (..)
+import Virus exposing (..)
 
 
-view : Model.Model -> Html Msg
-view ({ location } as model) =
+view : Model -> Html Msg
+view { game } =
+    case game of
+        GameOver score ->
+            div [] [ text <| "Game over, your score was : " ++ (toString score) ]
+
+        Playing culture ->
+            displayCulture culture
+
+
+displayCulture : Culture -> Html Msg
+displayCulture { npcs, player, score } =
     div []
-        [ display model
-        , drawCharacters model
+        [ banner player score
+        , drawCharacters player npcs
         ]
 
 
-display : Model -> Html Msg
-display model =
+banner : Virus -> Int -> Html Msg
+banner player score =
     div []
-        [ div [] [ Html.text "hello" ]
-        , div [] [ Html.text <| "Position: " ++ (toString model.location) ]
-        , div [] [ Html.text <| "Keys: " ++ (toString model.keys) ]
+        [ div [] [ Html.text <| "Position: " ++ (toString player.location) ]
+        , div [] [ Html.text <| "Size: " ++ (toString player.size) ]
+        , div [] [ Html.text <| "Score: " ++ (toString score) ]
         , br [] []
         ]
 
@@ -40,18 +50,16 @@ type alias Drawable =
     }
 
 
-drawCharacters : Model -> Html msg
-drawCharacters model =
+drawCharacters : Virus -> List Virus -> Html msg
+drawCharacters playerVirus npcs =
     let
-        main =
-            model.location
-                |> player
-                |> (\pl -> { pl | color = playerColor model })
+        playerDrawable =
+            player playerVirus
 
-        npcs =
-            List.map npc model.npcs
+        npcDrawables =
+            List.map npc npcs
     in
-        draw (main :: npcs)
+        draw (playerDrawable :: npcDrawables)
 
 
 draw : List Drawable -> Html msg
@@ -61,14 +69,23 @@ draw drawables =
             (List.map toCollageForm drawables)
 
 
-player : Location.Location -> Drawable
-player { x, y } =
-    Drawable x y 10 Color.blue
+player : Virus -> Drawable
+player virus =
+    virusToDrawable virus Color.blue
 
 
-npc : Location.Location -> Drawable
-npc { x, y } =
-    Drawable x y 10 Color.green
+npc : Virus -> Drawable
+npc virus =
+    virusToDrawable virus Color.green
+
+
+virusToDrawable : Virus -> Color.Color -> Drawable
+virusToDrawable { location, size } color =
+    { x = location.x
+    , y = location.y
+    , r = size
+    , color = color
+    }
 
 
 toCollageForm : Drawable -> Collage.Form
@@ -76,11 +93,3 @@ toCollageForm { x, y, r, color } =
     Collage.oval r r
         |> Collage.filled color
         |> Collage.move ( x, y )
-
-
-playerColor : Model -> Color.Color
-playerColor model =
-    if not <| List.isEmpty <| Location.playerCollisions model.location model.npcs then
-        Color.red
-    else
-        Color.blue

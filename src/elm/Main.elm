@@ -2,8 +2,7 @@ module Main exposing (..)
 
 import AnimationFrame
 import Clock exposing (Clock)
-import Model exposing (Msg(..))
-import Location
+import Model exposing (Msg(..), Model, updateGame, init)
 import Keys
 import View exposing (view)
 import Html exposing (div)
@@ -12,10 +11,10 @@ import Keyboard exposing (..)
 import Time exposing (Time)
 
 
-main : Program Never Model.Model Msg
+main : Program Never Model Msg
 main =
     Html.program
-        { init = Model.init
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -26,7 +25,7 @@ main =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model.Model -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.downs KeyDown
@@ -39,7 +38,7 @@ subscriptions model =
 -- UPDATE
 
 
-update : Msg -> Model.Model -> ( Model.Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TimeDelta dt ->
@@ -56,6 +55,6 @@ update msg model =
             { model | keys = Keys.updateFromKeyCode keyNum False model.keys } ! []
 
 
-tick : Time -> Model.Model -> Model.Model
-tick _ model =
-    Model.updateLocation model
+tick : Time -> Model -> Model
+tick _ ({ keys, game } as model) =
+    { model | game = updateGame keys game }

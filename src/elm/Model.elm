@@ -1,9 +1,9 @@
 module Model exposing (..)
 
 import Clock exposing (Clock)
-import Location
-import Keys exposing (GameKey(..))
+import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
+import Virus exposing (..)
 
 
 -- 30 FPS
@@ -23,8 +23,19 @@ type Msg
 type alias Model =
     { clock : Clock
     , keys : Keys.Keys
-    , location : Location.Location
-    , npcs : List Location.Location
+    , game : Game
+    }
+
+
+type Game
+    = Playing Culture
+    | GameOver Int
+
+
+type alias Culture =
+    { npcs : List Virus
+    , player : Virus
+    , score : Int
     }
 
 
@@ -32,51 +43,53 @@ init : ( Model, Cmd Msg )
 init =
     { clock = Clock.withPeriod gameLoopPeriod
     , keys = Keys.init
-    , location = Location.center
-    , npcs = [ Location.center ]
+    , game = Playing <| Culture [ npc ] player 0
     }
         ! []
 
 
-updateLocation : Model -> Model
-updateLocation ({ keys } as model) =
-    model
-        |> applyPlayerVector (keysToVector keys)
-        |> applyNpcVectors
+updateGame : Keys -> Game -> Game
+updateGame keys game =
+    case game of
+        GameOver score ->
+            GameOver score
+
+        Playing culture ->
+            culture
+                |> updateCulture keys
 
 
-applyPlayerVector : Location.Vector -> Model -> Model
-applyPlayerVector vector model =
-    { model | location = Location.applyVector vector model.location }
+updateCulture : Keys -> Culture -> Game
+updateCulture keys { npcs, player, score } =
+    let
+        newPlayer =
+            move (Keys.keysToTuple keys) player
+
+        newNpcs =
+            updateNpcs npcs
+    in
+        handleCollisions score newPlayer newNpcs
 
 
-{-| applyNpcVectors
-here we can do some logic for how the npcs behave
+{-| updateNpcs
+This is the place where the magic AI happens
+probably just bounce at the reflected angle off the walls
+Which would mean I need to track trajectory
 -}
-applyNpcVectors : Model -> Model
-applyNpcVectors model =
-    model
+updateNpcs : List Virus -> List Virus
+updateNpcs npcs =
+    npcs
 
 
-keysToVector : Keys.Keys -> Location.Vector
-keysToVector keysDict =
-    keysDict
-        |> Keys.pressedKeys
-        |> List.foldr foldKey ( 0, 0 )
-        |> Location.tupleToVector
+handleCollisions : Int -> Virus -> List Virus -> Game
+handleCollisions score player npcs =
+    let
+        ( mortalVirus, remainingNpcs ) =
+            Virus.handleCollisions player npcs
+    in
+        case mortalVirus of
+            Dead ->
+                GameOver score
 
-
-foldKey : Keys.GameKey -> ( Float, Float ) -> ( Float, Float )
-foldKey key ( x, y ) =
-    case key of
-        Down ->
-            ( x, y - 1 )
-
-        Left ->
-            ( x - 1, y )
-
-        Right ->
-            ( x + 1, y )
-
-        Up ->
-            ( x, y + 1 )
+            Alive virus ->
+                Playing <| Culture remainingNpcs virus (score + 1)

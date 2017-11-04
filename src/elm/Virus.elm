@@ -1,10 +1,19 @@
-module Virus exposing (..)
+module Virus
+    exposing
+        ( handleCollisions
+        , Mortal(..)
+        , move
+        , npc
+        , newVirus
+        , player
+        , Virus
+        )
 
 import Location exposing (..)
 
 
 type alias Virus =
-    { size : Int
+    { size : Float
     , location : Location
     }
 
@@ -14,7 +23,7 @@ player =
     Virus 5 playerStart
 
 
-newVirus : Int -> ( Float, Float ) -> Virus
+newVirus : Float -> ( Float, Float ) -> Virus
 newVirus size ( x, y ) =
     Virus size <| Location x y
 
