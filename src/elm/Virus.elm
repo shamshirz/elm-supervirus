@@ -31,9 +31,14 @@ radius =
     5
 
 
+boundaryRadius : Float
+boundaryRadius =
+    40
+
+
 boundary : Circle
 boundary =
-    circle 0 0 40
+    circle 0 0 boundaryRadius
 
 
 center : Vec2
@@ -67,16 +72,27 @@ npc =
 move : ( Float, Float ) -> Virus -> Virus
 move tuple { size, location } =
     let
-        newLocation =
+        newVirus =
             tuple
                 |> fromTuple
                 |> add location
+                |> Virus size
     in
-        if circleToCircle (vec2Circle newLocation) boundary then
-            -- Find the closest possible location without colliding
-            Virus size newLocation
+        if circleToCircle (vec2Circle newVirus.location) boundary then
+            -- We are within the boundary, so use this location
+            newVirus
         else
-            Virus size location
+            -- We are outside the boundary, bring us back to the edge
+            newVirus
+                |> moveWithinBoundary
+
+
+moveWithinBoundary : Virus -> Virus
+moveWithinBoundary virus =
+    virus.location
+        |> normalize
+        |> scale (boundaryRadius + virus.size)
+        |> Virus virus.size
 
 
 

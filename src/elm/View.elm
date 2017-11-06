@@ -66,7 +66,15 @@ draw : List Drawable -> Html msg
 draw drawables =
     Element.toHtml <|
         Collage.collage 500 500 <|
-            (List.map toCollageForm drawables)
+            (boundary
+                :: (List.map toCollageForm drawables)
+            )
+
+
+boundary : Collage.Form
+boundary =
+    Collage.oval 95 95
+        |> Collage.outlined (Collage.solid Color.black)
 
 
 player : Virus -> Drawable
