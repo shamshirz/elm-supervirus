@@ -1,6 +1,8 @@
 module Virus
     exposing
         ( handleCollisions
+        , handleCollision
+        , location
         , Mortal(..)
         , move
         , npc
@@ -9,35 +11,93 @@ module Virus
         , Virus
         )
 
-import Location exposing (..)
+import Math.Vector2 exposing (..)
+import Collision2D exposing (circle, Circle, circleToCircle)
 
 
 type alias Virus =
     { size : Float
-    , location : Location
+    , location : Vec2
     }
+
+
+location : Virus -> { x : Float, y : Float }
+location virus =
+    toRecord virus.location
+
+
+radius : Float
+radius =
+    5
+
+
+boundary : Circle
+boundary =
+    circle 0 0 40
+
+
+center : Vec2
+center =
+    vec2 0 0
 
 
 player : Virus
 player =
-    Virus 5 playerStart
+    Virus 5 center
 
 
 newVirus : Float -> ( Float, Float ) -> Virus
 newVirus size ( x, y ) =
-    Virus size <| Location x y
+    center
+        |> add (vec2 x y)
+        |> Virus size
 
 
 npc : Virus
 npc =
-    Virus 4 npcStart
+    center
+        |> add (vec2 10 10)
+        |> Virus 4
+
+
+
+-- Needs to handle boundary
 
 
 move : ( Float, Float ) -> Virus -> Virus
 move tuple { size, location } =
-    location
-        |> Location.applyVector (tupleToVector tuple)
-        |> Virus size
+    let
+        newLocation =
+            tuple
+                |> fromTuple
+                |> add location
+    in
+        if circleToCircle (vec2Circle newLocation) boundary then
+            -- Find the closest possible location without colliding
+            Virus size newLocation
+        else
+            Virus size location
+
+
+
+-- Collisions
+
+
+{-| handleCollisions
+Handles multiple collisions and returns
+the virus wrapped in the status of the collisions
+and the list of Viruses that were not involved in collisions
+-}
+handleCollisions : Virus -> List Virus -> ( Mortal Virus, List Virus )
+handleCollisions player npcs =
+    let
+        ( collisions, others ) =
+            List.partition (isCollision player) npcs
+
+        mortalVirus =
+            List.foldl handleCollision (Alive player) collisions
+    in
+        ( mortalVirus, others )
 
 
 type Mortal a
@@ -71,16 +131,15 @@ handleCollision enemy mortalPlayer =
 
 isCollision : Virus -> Virus -> Bool
 isCollision first second =
-    Location.isCollision first.location second.location
+    circleToCircle
+        (vec2Circle first.location)
+        (vec2Circle second.location)
 
 
-handleCollisions : Virus -> List Virus -> ( Mortal Virus, List Virus )
-handleCollisions player npcs =
+vec2Circle : Vec2 -> Circle
+vec2Circle vec =
     let
-        ( collisions, others ) =
-            List.partition (isCollision player) npcs
-
-        mortalVirus =
-            List.foldl handleCollision (Alive player) collisions
+        ( x, y ) =
+            toTuple vec
     in
-        ( mortalVirus, others )
+        circle x y radius

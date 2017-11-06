@@ -7,7 +7,6 @@ import Expect exposing (Expectation)
 
 import Test exposing (..)
 import Virus exposing (..)
-import Location exposing (..)
 
 
 suite : Test
@@ -36,8 +35,12 @@ suite =
 
                         secondMove =
                             move ( 2, 2 ) firstMove
+
+                        targetLocation =
+                            player
+                                |> move ( 4, 4 )
                     in
-                        Expect.equal secondMove.location (Location 4 4)
+                        Expect.equal secondMove.location targetLocation.location
             ]
         , describe "Virus.handleCollision"
             [ test "player dies if collides with bigger virus" <|

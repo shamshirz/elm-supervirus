@@ -80,12 +80,16 @@ npc virus =
 
 
 virusToDrawable : Virus -> Color.Color -> Drawable
-virusToDrawable { location, size } color =
-    { x = location.x
-    , y = location.y
-    , r = size
-    , color = color
-    }
+virusToDrawable virus color =
+    let
+        { x, y } =
+            location virus
+    in
+        { x = x
+        , y = y
+        , r = virus.size
+        , color = color
+        }
 
 
 toCollageForm : Drawable -> Collage.Form
