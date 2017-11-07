@@ -22,9 +22,13 @@ Makin' gaimz.
  * ~~Collision detection~~
  * ~~Boundaries~~
  * ~~Scoring~~
- * Smooth borders
- * Enemy Spawning
+ * ~~Smooth borders~~
  * Enemy Movement
+   * Enemy wall bounce
+   * random in play
+   * Enemy random velocity on spawn
+ * Enemy Spawning
+ * Streamline speed / size / display (UI work)
  * Improve scoring
  * Viewport?
  * GameOver View

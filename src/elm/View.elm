@@ -66,14 +66,14 @@ draw : List Drawable -> Html msg
 draw drawables =
     Element.toHtml <|
         Collage.collage 500 500 <|
-            (boundary
+            (petriDish
                 :: (List.map toCollageForm drawables)
             )
 
 
-boundary : Collage.Form
-boundary =
-    Collage.oval 95 95
+petriDish : Collage.Form
+petriDish =
+    Collage.circle boundaryRadius
         |> Collage.outlined (Collage.solid Color.black)
 
 
@@ -102,6 +102,6 @@ virusToDrawable virus color =
 
 toCollageForm : Drawable -> Collage.Form
 toCollageForm { x, y, r, color } =
-    Collage.oval r r
+    Collage.circle r
         |> Collage.filled color
         |> Collage.move ( x, y )
