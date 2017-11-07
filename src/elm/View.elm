@@ -36,39 +36,26 @@ banner player score =
         ]
 
 
-
--- elm graphics implementation
--- Steps
--- Do some logic (is collision? and what happens if so?)
-
-
-type alias Drawable =
-    { x : Float
-    , y : Float
-    , r : Float
-    , color : Color.Color
-    }
-
-
 drawCharacters : Virus -> List Virus -> Html msg
 drawCharacters playerVirus npcs =
-    let
-        playerDrawable =
-            player playerVirus
-
-        npcDrawables =
-            List.map npc npcs
-    in
-        draw (playerDrawable :: npcDrawables)
+    draw <| player playerVirus :: List.map npc npcs
 
 
-draw : List Drawable -> Html msg
-draw drawables =
+draw : List Collage.Form -> Html msg
+draw viruses =
     Element.toHtml <|
         Collage.collage 500 500 <|
-            (petriDish
-                :: (List.map toCollageForm drawables)
-            )
+            (petriDish :: viruses)
+
+
+player : Virus -> Collage.Form
+player virus =
+    drawVirus Color.blue virus
+
+
+npc : Virus -> Collage.Form
+npc virus =
+    drawVirus Color.green virus
 
 
 petriDish : Collage.Form
@@ -77,31 +64,12 @@ petriDish =
         |> Collage.outlined (Collage.solid Color.black)
 
 
-player : Virus -> Drawable
-player virus =
-    virusToDrawable virus Color.blue
-
-
-npc : Virus -> Drawable
-npc virus =
-    virusToDrawable virus Color.green
-
-
-virusToDrawable : Virus -> Color.Color -> Drawable
-virusToDrawable virus color =
+drawVirus : Color.Color -> Virus -> Collage.Form
+drawVirus color virus =
     let
-        { x, y } =
+        ( x, y ) =
             location virus
     in
-        { x = x
-        , y = y
-        , r = virus.size
-        , color = color
-        }
-
-
-toCollageForm : Drawable -> Collage.Form
-toCollageForm { x, y, r, color } =
-    Collage.circle r
-        |> Collage.filled color
-        |> Collage.move ( x, y )
+        Collage.circle virus.size
+            |> Collage.filled color
+            |> Collage.move ( x, y )

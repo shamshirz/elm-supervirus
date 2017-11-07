@@ -29,9 +29,9 @@ type alias Npc =
     Moving Virus
 
 
-location : Virus -> { x : Float, y : Float }
+location : Virus -> ( Float, Float )
 location virus =
-    Vector2.toRecord virus.location
+    Vector2.toTuple virus.location
 
 
 {-| Context free fxn, still requires the boundary radius
