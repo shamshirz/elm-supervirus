@@ -39,11 +39,16 @@ type alias Culture =
     }
 
 
+boundaryRadius : Float
+boundaryRadius =
+    40
+
+
 init : ( Model, Cmd Msg )
 init =
     { clock = Clock.withPeriod gameLoopPeriod
     , keys = Keys.init
-    , game = Playing <| Culture [ npc ] player 0
+    , game = Playing <| Culture [ (npc boundaryRadius) ] (player boundaryRadius) 0
     }
         ! []
 
@@ -63,7 +68,7 @@ updateCulture : Keys -> Culture -> Game
 updateCulture keys { npcs, player, score } =
     let
         newPlayer =
-            move (Keys.keysToTuple keys) player
+            move (Keys.keysToTuple keys) boundaryRadius player
 
         newNpcs =
             updateNpcs npcs

@@ -11,8 +11,8 @@ module Virus
         , Virus
         )
 
-import Math.Vector2 exposing (..)
-import Collision2D exposing (circle, Circle, circleToCircle)
+import Math.Vector2 as Vector2 exposing (Vec2)
+import Collision2D as Collision exposing (Circle)
 
 
 type alias Virus =
@@ -21,78 +21,90 @@ type alias Virus =
     }
 
 
+type alias Moving a =
+    { a | velocity : Vec2 }
+
+
+type alias Npc =
+    Moving Virus
+
+
 location : Virus -> { x : Float, y : Float }
 location virus =
-    toRecord virus.location
+    Vector2.toRecord virus.location
 
 
-radius : Float
-radius =
-    5
-
-
-boundaryRadius : Float
-boundaryRadius =
-    40
-
-
-boundary : Circle
-boundary =
-    circle 0 0 boundaryRadius
-
-
-center : Vec2
-center =
-    vec2 0 0
-
-
-player : Virus
+{-| Context free fxn, still requires the boundary radius
+-}
+player : Float -> Virus
 player =
-    Virus 5 center
+    newVirus 5 ( 0, 0 )
 
 
-newVirus : Float -> ( Float, Float ) -> Virus
-newVirus size ( x, y ) =
-    center
-        |> add (vec2 x y)
-        |> Virus size
-
-
-npc : Virus
+{-| Context free fxn, still requires the boundary radius
+-}
+npc : Float -> Virus
 npc =
-    center
-        |> add (vec2 10 10)
-        |> Virus 4
+    newVirus 4 ( 10, 10 )
 
 
+newVirus : Float -> ( Float, Float ) -> Float -> Virus
+newVirus size location boundaryRadius =
+    Vector2.vec2 0 0
+        |> Virus size
+        |> move location boundaryRadius
 
--- Needs to handle boundary
 
-
-move : ( Float, Float ) -> Virus -> Virus
-move tuple { size, location } =
+move : ( Float, Float ) -> Float -> Virus -> Virus
+move tuple boundaryRadius { size, location } =
     let
         newVirus =
             tuple
-                |> fromTuple
-                |> add location
+                |> Vector2.fromTuple
+                |> Vector2.add location
                 |> Virus size
     in
-        if circleToCircle (vec2Circle newVirus.location) boundary then
-            -- We are within the boundary, so use this location
+        if virusWithinBoundary newVirus boundaryRadius then
             newVirus
         else
-            -- We are outside the boundary, bring us back to the edge
             newVirus
-                |> moveWithinBoundary
+                |> moveToBoundary (boundaryRadius)
 
 
-moveWithinBoundary : Virus -> Virus
-moveWithinBoundary virus =
+{-| This function will take a location vector, try to determine it's direction,
+then scale it to the boundary (minus it's own size).
+This will put the outside edge of the virus on the boundary.
+
+If we are at the origin, there is no normalized vector, so I will send
+you straight to hell (downward with no x value).
+
+The nice thing about this function, is that we can move outside things in,
+and inside things out.
+
+-}
+moveToBoundary : Float -> Virus -> Virus
+moveToBoundary radiusOfBoundary virus =
     virus.location
         |> normalize
-        |> scale (boundaryRadius + virus.size)
+        |> Vector2.scale (radiusOfBoundary - virus.size)
         |> Virus virus.size
+
+
+{-| Wrapper for normalize because we get NaN
+if you do it from the origin. This is wonky, but
+better than everything breaking
+-}
+normalize : Vec2 -> Vec2
+normalize vec =
+    if (Vector2.length vec) == 0 then
+        Vector2.vec2 0 1
+    else
+        Vector2.normalize vec
+
+
+virusWithinBoundary : Virus -> Float -> Bool
+virusWithinBoundary virus radiusOfBoundary =
+    Vector2.length virus.location <= (radiusOfBoundary - virus.size)
 
 
 
@@ -147,15 +159,15 @@ handleCollision enemy mortalPlayer =
 
 isCollision : Virus -> Virus -> Bool
 isCollision first second =
-    circleToCircle
-        (vec2Circle first.location)
-        (vec2Circle second.location)
+    Collision.circleToCircle
+        (virusToCircle first)
+        (virusToCircle second)
 
 
-vec2Circle : Vec2 -> Circle
-vec2Circle vec =
+virusToCircle : Virus -> Circle
+virusToCircle { size, location } =
     let
         ( x, y ) =
-            toTuple vec
+            Vector2.toTuple location
     in
-        circle x y radius
+        Collision.circle x y size
