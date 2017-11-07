@@ -9,6 +9,10 @@ import Test exposing (..)
 import Virus exposing (..)
 
 
+testingBoundary =
+    40
+
+
 suite : Test
 suite =
     describe "The Virus module"
@@ -17,40 +21,37 @@ suite =
             [ test "updates the location of a virus" <|
                 \_ ->
                     let
-                        movedVirus =
-                            move ( 10, 10 ) <| player
+                        targetPosition =
+                            ( -2, 3 )
 
-                        otherVirus =
-                            newVirus 5 ( 10, 10 )
+                        virus =
+                            player testingBoundary
+                                |> move targetPosition testingBoundary
                     in
-                        Expect.equal movedVirus otherVirus
+                        Expect.equal (location virus) targetPosition
             , test "updates the location relative to current position" <|
                 \_ ->
                     let
-                        startingVirus =
-                            player
+                        movementVector =
+                            ( 1, 3 )
 
-                        firstMove =
-                            move ( 2, 2 ) startingVirus
-
-                        secondMove =
-                            move ( 2, 2 ) firstMove
-
-                        targetLocation =
-                            player
-                                |> move ( 4, 4 )
+                        virus =
+                            player testingBoundary
+                                |> move movementVector testingBoundary
+                                |> move movementVector testingBoundary
+                                |> move movementVector testingBoundary
                     in
-                        Expect.equal secondMove.location targetLocation.location
+                        Expect.equal (location virus) ( 3, 9 )
             ]
         , describe "Virus.handleCollision"
             [ test "player dies if collides with bigger virus" <|
                 \_ ->
                     let
                         player =
-                            Alive <| newVirus 5 ( 0, 0 )
+                            Alive <| newVirus 5 ( 0, 0 ) testingBoundary
 
                         biggerVirus =
-                            newVirus 10 ( 0, 0 )
+                            newVirus 10 ( 0, 0 ) testingBoundary
                     in
                         case handleCollision biggerVirus player of
                             Dead ->
@@ -62,10 +63,10 @@ suite =
                 \_ ->
                     let
                         player =
-                            Alive <| newVirus 5 ( 0, 0 )
+                            Alive <| newVirus 5 ( 0, 0 ) testingBoundary
 
                         biggerVirus =
-                            newVirus 2 ( 0, 0 )
+                            newVirus 2 ( 0, 0 ) testingBoundary
                     in
                         case handleCollision biggerVirus player of
                             Dead ->
@@ -80,7 +81,7 @@ suite =
                             Dead
 
                         biggerVirus =
-                            newVirus 2 ( 0, 0 )
+                            newVirus 2 ( 0, 0 ) testingBoundary
                     in
                         case handleCollision biggerVirus player of
                             Dead ->
@@ -95,10 +96,10 @@ suite =
                 \_ ->
                     let
                         player =
-                            newVirus 5 ( 0, 0 )
+                            newVirus 5 ( 0, 0 ) testingBoundary
 
                         otherVirus =
-                            newVirus 2 ( 0, 0 )
+                            newVirus 2 ( 0, 0 ) testingBoundary
 
                         threeOfThem =
                             [ otherVirus, otherVirus, otherVirus ]
