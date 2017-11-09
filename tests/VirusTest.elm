@@ -9,6 +9,7 @@ import Test exposing (..)
 import Virus exposing (..)
 
 
+testingBoundary : Float
 testingBoundary =
     40
 
