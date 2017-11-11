@@ -1,4 +1,4 @@
-module MyMath exposing (collisionPoint, safeSlope, inwardNormal)
+module MyMath exposing (collisionPoint, safeSlope, inwardNormal, updatePositionAndVelocity)
 
 {-| A not so great performance math library specifically for
 finding the intersection of a line and a circle. We know there will be no evil
@@ -19,6 +19,91 @@ You might wonder
 -}
 
 import Math.Vector2 as Vector2 exposing (Vec2)
+
+
+-- Whole thing. Bounce of of interior of a circle.
+-- Given 2 points and a radius, we return a (Point, velocity) tuple
+-- If no collision, whatever, return the next point and the current velocity
+-- If a collision, do the baller shit
+-- 1. Determine Collision Location
+-- 2. Determine vector outside of boundary (direction * length)
+-- 3. Determine normal unit vector towards origin
+-- 4. Reject vector on normal vector
+
+
+{-| Find the next point considering the boundary
+If we land outside the boundary, then calculate the new point
+and the new direction of the velocity.
+
+If we aren't outside the boundary, the just return that new point
+and the current velocity.
+
+-}
+updatePositionAndVelocity : Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
+updatePositionAndVelocity point velocity radius =
+    let
+        next =
+            naiveNextPosition point velocity
+    in
+        if isOutsideRadius radius next then
+            handleCollision point next velocity radius
+        else
+            ( next, velocity )
+
+
+
+-- TODO: Convert everything to use these
+
+
+type Position
+    = Position Vec2
+
+
+type Velocity
+    = Velocity Vec2
+
+
+{-| Yeesh
+
+1.  find collision
+2.  find portion of vector outside
+3.  reflect that across line pointing towards origin
+4.  reflect velocity across that line too
+
+-}
+handleCollision : Vec2 -> Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
+handleCollision insidePoint outsidePoint velocity radius =
+    let
+        intersection =
+            collisionPoint insidePoint outsidePoint radius
+                |> Debug.log "CollisionAt: "
+
+        velocityUnitVector =
+            Vector2.normalize velocity
+
+        lengthAfterCollision =
+            Vector2.distance outsidePoint intersection
+                |> Debug.log "LengthAfterCollision: "
+
+        vectorOutside =
+            Vector2.scale (lengthAfterCollision) velocityUnitVector
+                |> Debug.log "VectorAfterCollision: "
+
+        normalOfCollisionTangent =
+            Vector2.direction origin intersection
+
+        reflectedOusideVector =
+            reflect vectorOutside normalOfCollisionTangent
+                |> Debug.log "Reflected outside vector!"
+
+        newPosition =
+            Vector2.add intersection reflectedOusideVector
+                |> Debug.log "NewPosition"
+
+        reflectedVelocity =
+            reflect velocity normalOfCollisionTangent
+    in
+        ( newPosition, reflectedVelocity )
 
 
 {-| Rise over run, and we stay safe from NaN
@@ -92,23 +177,6 @@ collisionPoint pointA pointB radius =
             intersection2
 
 
-isSameSign : Float -> Float -> Bool
-isSameSign a b =
-    (a >= 0 && b >= 0) || (a < 0 && b < 0)
-
-
-isSameDirection : Vec2 -> Vec2 -> Bool
-isSameDirection a b =
-    let
-        ( xA, yA ) =
-            Vector2.toTuple a
-
-        ( xB, yB ) =
-            Vector2.toTuple b
-    in
-        isSameSign xA xB && isSameSign yA yB
-
-
 {-| Do math, return the intersection point of a line we know and a cirle with origin (0, 0)
 This is the result of a system of equations for the line (y = mx + b)
 and the equation of a circle (sqrt(x^2 + y^2) = r)
@@ -159,6 +227,10 @@ quadratic a b c =
         ( plusB, minusB )
 
 
+
+--  Normal equations
+
+
 {-| get the normals, then pick the one pointing towards the origin
 The interesting thing here is, if the point is at the origin.
 then all is lost. Everything is pointing away.
@@ -193,6 +265,62 @@ normals vec =
             Vector2.toTuple vec
     in
         ( Vector2.vec2 x -y, Vector2.vec2 -x y )
+
+
+{-| Vector orthagonal projection on normal
+Known as a "rejection" on normal
+
+b_bar = a_bar - 2(a_bar dot normal)normal
+
+This always works. Real math, just vectors being vectors
+Worst case scenario we are perpendicular and the rejection is itself
+
+-}
+reflect : Vec2 -> Vec2 -> Vec2
+reflect vector normal =
+    let
+        aDotN =
+            Vector2.dot vector normal
+
+        rhs =
+            Vector2.scale (2 * aDotN) normal
+    in
+        Vector2.sub vector rhs
+
+
+
+-- >>>>>>>>>>>>>>> UTIL <<<<<<<<<<<<<<<<<
+-- These are basically just aliases for simple math
+-- goal is readability & simplicity
+
+
+{-| assumes origin is (0, 0)
+-}
+isOutsideRadius : Float -> Vec2 -> Bool
+isOutsideRadius radius point =
+    Vector2.length point > radius
+
+
+naiveNextPosition : Vec2 -> Vec2 -> Vec2
+naiveNextPosition point velocity =
+    Vector2.add point velocity
+
+
+isSameSign : Float -> Float -> Bool
+isSameSign a b =
+    (a >= 0 && b >= 0) || (a < 0 && b < 0)
+
+
+isSameDirection : Vec2 -> Vec2 -> Bool
+isSameDirection a b =
+    let
+        ( xA, yA ) =
+            Vector2.toTuple a
+
+        ( xB, yB ) =
+            Vector2.toTuple b
+    in
+        isSameSign xA xB && isSameSign yA yB
 
 
 origin : Vec2
