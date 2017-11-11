@@ -9,6 +9,7 @@ module Virus
         , Npc
         , newVirus
         , player
+        , setVelocity
         , updateNpc
         , Virus
         )
@@ -32,8 +33,8 @@ type alias Npc =
     Moving Virus
 
 
-setVelocity : { a | velocity : Vec2 } -> Vec2 -> { a | velocity : Vec2 }
-setVelocity mover vel =
+setVelocity : Vec2 -> { a | velocity : Vec2 } -> { a | velocity : Vec2 }
+setVelocity vel mover =
     { mover | velocity = vel }
 
 

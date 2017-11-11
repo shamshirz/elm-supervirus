@@ -4,6 +4,7 @@ import Clock exposing (Clock)
 import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
 import Virus exposing (..)
+import Math.Vector2 as Vector2
 
 
 -- 30 FPS
@@ -42,14 +43,25 @@ type alias Culture =
 
 boundaryRadius : Float
 boundaryRadius =
-    40
+    100
+
+
+createNpcs : List Npc
+createNpcs =
+    [ npc boundaryRadius
+    , npc boundaryRadius |> setVelocity (Vector2.vec2 1 3)
+    , npc boundaryRadius |> setVelocity (Vector2.vec2 -1 1)
+    , npc boundaryRadius |> setVelocity (Vector2.vec2 -3 4)
+    , npc boundaryRadius |> setVelocity (Vector2.vec2 0.5 1.3)
+    , npc boundaryRadius |> setVelocity (Vector2.vec2 0.9 -0.2)
+    ]
 
 
 init : ( Model, Cmd Msg )
 init =
     { clock = Clock.withPeriod gameLoopPeriod
     , keys = Keys.init
-    , game = Playing <| Culture [ (npc boundaryRadius) ] (player boundaryRadius) 0
+    , game = Playing <| Culture createNpcs (player boundaryRadius) 0
     }
         ! []
 
