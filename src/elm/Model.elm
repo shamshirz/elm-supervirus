@@ -33,7 +33,7 @@ type Game
 
 
 type alias Culture =
-    { npcs : List Virus
+    { npcs : List Npc
     , player : Virus
     , score : Int
     }
@@ -71,7 +71,7 @@ updateCulture keys { npcs, player, score } =
             move (Keys.keysToTuple keys) boundaryRadius player
 
         newNpcs =
-            updateNpcs npcs
+            updateNpcs boundaryRadius npcs
     in
         handleCollisions score newPlayer newNpcs
 
@@ -81,12 +81,12 @@ This is the place where the magic AI happens
 probably just bounce at the reflected angle off the walls
 Which would mean I need to track trajectory
 -}
-updateNpcs : List Virus -> List Virus
-updateNpcs npcs =
-    npcs
+updateNpcs : Float -> List Npc -> List Npc
+updateNpcs boundaryRadius npcs =
+    List.map (updateNpc boundaryRadius) npcs
 
 
-handleCollisions : Int -> Virus -> List Virus -> Game
+handleCollisions : Int -> Virus -> List Npc -> Game
 handleCollisions score player npcs =
     let
         ( mortalVirus, remainingNpcs ) =

@@ -1,4 +1,12 @@
-module MyMath exposing (collisionPoint, safeSlope, inwardNormal, updatePositionAndVelocity)
+module MyMath
+    exposing
+        ( collisionPoint
+        , safeSlope
+        , inwardNormal
+        , updatePositionAndVelocity
+        , isOutsideRadius
+        , scaleWithinBoundary
+        )
 
 {-| A not so great performance math library specifically for
 finding the intersection of a line and a circle. We know there will be no evil
@@ -288,6 +296,27 @@ reflect vector normal =
         Vector2.sub vector rhs
 
 
+{-| This function will take a location vector, try to determine it's direction,
+then scale it to the boundary (minus it's own size).
+This will put the outside edge of the virus on the boundary.
+
+If we are already inside the boundary, then no modification is made
+
+-}
+scaleWithinBoundary : Float -> Float -> Vec2 -> Vec2
+scaleWithinBoundary boundary size position =
+    let
+        boundaryMinusSize =
+            boundary - size
+    in
+        if isOutsideRadius boundaryMinusSize position then
+            position
+                |> normalize
+                |> Vector2.scale (boundaryMinusSize)
+        else
+            position
+
+
 
 -- >>>>>>>>>>>>>>> UTIL <<<<<<<<<<<<<<<<<
 -- These are basically just aliases for simple math
@@ -304,6 +333,18 @@ isOutsideRadius radius point =
 naiveNextPosition : Vec2 -> Vec2 -> Vec2
 naiveNextPosition point velocity =
     Vector2.add point velocity
+
+
+{-| Wrapper for normalize because we get NaN
+if you do it from the origin. This is wonky, but
+better than everything breaking
+-}
+normalize : Vec2 -> Vec2
+normalize vec =
+    if (Vector2.length vec) == 0 then
+        Vector2.vec2 0 0
+    else
+        Vector2.normalize vec
 
 
 isSameSign : Float -> Float -> Bool

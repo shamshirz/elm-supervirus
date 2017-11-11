@@ -6,13 +6,16 @@ module Virus
         , Mortal(..)
         , move
         , npc
+        , Npc
         , newVirus
         , player
+        , updateNpc
         , Virus
         )
 
 import Math.Vector2 as Vector2 exposing (Vec2)
 import Collision2D as Collision exposing (Circle)
+import MyMath
 
 
 type alias Virus =
@@ -29,9 +32,30 @@ type alias Npc =
     Moving Virus
 
 
-location : Virus -> ( Float, Float )
-location virus =
-    Vector2.toTuple virus.location
+setVelocity : { a | velocity : Vec2 } -> Vec2 -> { a | velocity : Vec2 }
+setVelocity mover vel =
+    { mover | velocity = vel }
+
+
+npc : Float -> Npc
+npc boundary =
+    makeNpc boundary 4 (Vector2.vec2 10 10) (Vector2.vec2 1 2)
+
+
+makeNpc : Float -> Float -> Vec2 -> Vec2 -> Npc
+makeNpc boundary size location velocity =
+    { velocity = velocity
+    , size = size
+    , location = MyMath.scaleWithinBoundary boundary size location
+    }
+
+
+setNpc : Float -> Vec2 -> Vec2 -> Npc
+setNpc size location velocity =
+    { velocity = velocity
+    , size = size
+    , location = location
+    }
 
 
 {-| Context free fxn, still requires the boundary radius
@@ -41,11 +65,18 @@ player =
     newVirus 5 ( 0, 0 )
 
 
-{-| Context free fxn, still requires the boundary radius
--}
-npc : Float -> Virus
-npc =
-    newVirus 4 ( 10, 10 )
+location : Virus -> ( Float, Float )
+location virus =
+    Vector2.toTuple virus.location
+
+
+updateNpc : Float -> Npc -> Npc
+updateNpc boundaryRadius { velocity, size, location } =
+    let
+        ( newLoc, newVel ) =
+            MyMath.updatePositionAndVelocity location velocity boundaryRadius
+    in
+        setNpc size newLoc newVel
 
 
 newVirus : Float -> ( Float, Float ) -> Float -> Virus
@@ -57,54 +88,11 @@ newVirus size location boundaryRadius =
 
 move : ( Float, Float ) -> Float -> Virus -> Virus
 move tuple boundaryRadius { size, location } =
-    let
-        newVirus =
-            tuple
-                |> Vector2.fromTuple
-                |> Vector2.add location
-                |> Virus size
-    in
-        if virusWithinBoundary newVirus boundaryRadius then
-            newVirus
-        else
-            newVirus
-                |> moveToBoundary (boundaryRadius)
-
-
-{-| This function will take a location vector, try to determine it's direction,
-then scale it to the boundary (minus it's own size).
-This will put the outside edge of the virus on the boundary.
-
-If we are at the origin, there is no normalized vector, so I will send
-you straight to hell (downward with no x value).
-
-The nice thing about this function, is that we can move outside things in,
-and inside things out.
-
--}
-moveToBoundary : Float -> Virus -> Virus
-moveToBoundary radiusOfBoundary virus =
-    virus.location
-        |> normalize
-        |> Vector2.scale (radiusOfBoundary - virus.size)
-        |> Virus virus.size
-
-
-{-| Wrapper for normalize because we get NaN
-if you do it from the origin. This is wonky, but
-better than everything breaking
--}
-normalize : Vec2 -> Vec2
-normalize vec =
-    if (Vector2.length vec) == 0 then
-        Vector2.vec2 0 1
-    else
-        Vector2.normalize vec
-
-
-virusWithinBoundary : Virus -> Float -> Bool
-virusWithinBoundary virus radiusOfBoundary =
-    Vector2.length virus.location <= (radiusOfBoundary - virus.size)
+    tuple
+        |> Vector2.fromTuple
+        |> Vector2.add location
+        |> MyMath.scaleWithinBoundary boundaryRadius size
+        |> Virus size
 
 
 
@@ -116,7 +104,7 @@ Handles multiple collisions and returns
 the virus wrapped in the status of the collisions
 and the list of Viruses that were not involved in collisions
 -}
-handleCollisions : Virus -> List Virus -> ( Mortal Virus, List Virus )
+handleCollisions : Virus -> List Npc -> ( Mortal Virus, List Npc )
 handleCollisions player npcs =
     let
         ( collisions, others ) =
@@ -144,7 +132,7 @@ b. We are larger than the other virus: eat it
 c. We are smaller than the other virus: we die
 
 -}
-handleCollision : Virus -> Mortal Virus -> Mortal Virus
+handleCollision : Npc -> Mortal Virus -> Mortal Virus
 handleCollision enemy mortalPlayer =
     case mortalPlayer of
         Alive player ->
@@ -157,15 +145,15 @@ handleCollision enemy mortalPlayer =
             Dead
 
 
-isCollision : Virus -> Virus -> Bool
+isCollision : Virus -> Npc -> Bool
 isCollision first second =
     Collision.circleToCircle
-        (virusToCircle first)
-        (virusToCircle second)
+        (collidableToCircle first.size first.location)
+        (collidableToCircle second.size second.location)
 
 
-virusToCircle : Virus -> Circle
-virusToCircle { size, location } =
+collidableToCircle : Float -> Vec2 -> Circle
+collidableToCircle size location =
     let
         ( x, y ) =
             Vector2.toTuple location

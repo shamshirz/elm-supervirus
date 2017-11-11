@@ -24,9 +24,10 @@ Makin' gaimz.
  * ~~Scoring~~
  * ~~Smooth borders~~
  * Enemy Movement
-   * Enemy wall bounce
+   * ~~Enemy wall bounce~~
    * random in play
    * Enemy random velocity on spawn
+   * Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)
  * Enemy Spawning
  * Streamline speed / size / display (UI work)
  * Improve scoring
