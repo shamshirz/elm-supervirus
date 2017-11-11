@@ -59,4 +59,22 @@ suite =
                     in
                         Expect.equal collisionPoint (Vector2.vec2 5 0)
             ]
+        , describe "normals"
+            [ test "We can find the normal pointing towards the origin" <|
+                \_ ->
+                    let
+                        origin =
+                            Vector2.vec2 0 0
+
+                        pointInQuadOne =
+                            Vector2.vec2 4 4
+
+                        lineTowardsQuadFour =
+                            Vector2.vec2 5 -5
+
+                        myNormalTowardsOrigin =
+                            MyMath.inwardNormal pointInQuadOne lineTowardsQuadFour
+                    in
+                        Expect.equal myNormalTowardsOrigin (Vector2.vec2 -5 -5)
+            ]
         ]

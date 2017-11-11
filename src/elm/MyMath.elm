@@ -1,4 +1,4 @@
-module MyMath exposing (collisionPoint, safeSlope)
+module MyMath exposing (collisionPoint, safeSlope, inwardNormal)
 
 {-| A not so great performance math library specifically for
 finding the intersection of a line and a circle. We know there will be no evil
@@ -97,6 +97,18 @@ isSameSign a b =
     (a >= 0 && b >= 0) || (a < 0 && b < 0)
 
 
+isSameDirection : Vec2 -> Vec2 -> Bool
+isSameDirection a b =
+    let
+        ( xA, yA ) =
+            Vector2.toTuple a
+
+        ( xB, yB ) =
+            Vector2.toTuple b
+    in
+        isSameSign xA xB && isSameSign yA yB
+
+
 {-| Do math, return the intersection point of a line we know and a cirle with origin (0, 0)
 This is the result of a system of equations for the line (y = mx + b)
 and the equation of a circle (sqrt(x^2 + y^2) = r)
@@ -145,6 +157,47 @@ quadratic a b c =
             (-b - sqrtTerm) / (2 * a)
     in
         ( plusB, minusB )
+
+
+{-| get the normals, then pick the one pointing towards the origin
+The interesting thing here is, if the point is at the origin.
+then all is lost. Everything is pointing away.
+-}
+inwardNormal : Vec2 -> Vec2 -> Vec2
+inwardNormal point line =
+    if Vector2.getX point == 0 && Vector2.getY point == 0 then
+        -- All must surely be lost. We have instersected at the origin.
+        -- There goes the type safety.
+        -- I'm returning a vector pointing up…I guess
+        Vector2.vec2 0 1
+    else
+        whichPointsToOrigin point <| normals line
+
+
+whichPointsToOrigin : Vec2 -> ( Vec2, Vec2 ) -> Vec2
+whichPointsToOrigin point ( vec1, vec2 ) =
+    let
+        dirToOrigin =
+            Vector2.direction origin point
+    in
+        if isSameDirection dirToOrigin vec1 then
+            vec1
+        else
+            vec2
+
+
+normals : Vec2 -> ( Vec2, Vec2 )
+normals vec =
+    let
+        ( x, y ) =
+            Vector2.toTuple vec
+    in
+        ( Vector2.vec2 x -y, Vector2.vec2 -x y )
+
+
+origin : Vec2
+origin =
+    Vector2.vec2 0 0
 
 
 
