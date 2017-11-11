@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import AnimationFrame
 import Clock exposing (Clock)
-import Model exposing (Msg(..), Model, updateGame, init)
+import Model exposing (Msg(..), Model, updateGame, endGame, init)
 import Keys
 import View exposing (view)
 import Html exposing (div)
@@ -41,6 +41,9 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        End ->
+            { model | game = endGame } ! []
+
         TimeDelta dt ->
             let
                 ( clock, newModel ) =

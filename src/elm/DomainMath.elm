@@ -1,4 +1,4 @@
-module MyMath
+module DomainMath
     exposing
         ( collisionPoint
         , safeSlope
@@ -27,6 +27,15 @@ You might wonder
 -}
 
 import Math.Vector2 as Vector2 exposing (Vec2)
+
+
+type Position
+    = Position Vec2
+
+
+type Velocity
+    = Velocity Vec2
+
 
 
 -- Whole thing. Bounce of of interior of a circle.
@@ -63,14 +72,6 @@ updatePositionAndVelocity point velocity radius =
 -- TODO: Convert everything to use these
 
 
-type Position
-    = Position Vec2
-
-
-type Velocity
-    = Velocity Vec2
-
-
 {-| Yeesh
 
 1.  find collision
@@ -82,23 +83,26 @@ type Velocity
 handleCollision : Vec2 -> Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
 handleCollision insidePoint outsidePoint velocity radius =
     let
+        _ =
+            Debug.log "Starting point: " insidePoint
+
+        _ =
+            Debug.log "Next Point: " outsidePoint
+
+        _ =
+            Debug.log "Some extra space\n\n" "\n\n"
+
         intersection =
             collisionPoint insidePoint outsidePoint radius
                 |> Debug.log "CollisionAt: "
 
-        velocityUnitVector =
-            Vector2.normalize velocity
-
-        lengthAfterCollision =
-            Vector2.distance outsidePoint intersection
-                |> Debug.log "LengthAfterCollision: "
-
         vectorOutside =
-            Vector2.scale (lengthAfterCollision) velocityUnitVector
-                |> Debug.log "VectorAfterCollision: "
+            Vector2.sub outsidePoint intersection
+                |> Debug.log "OutsideVector: "
 
         normalOfCollisionTangent =
             Vector2.direction origin intersection
+                |> Debug.log "unit vector pointing back in"
 
         reflectedOusideVector =
             reflect vectorOutside normalOfCollisionTangent
@@ -110,6 +114,7 @@ handleCollision insidePoint outsidePoint velocity radius =
 
         reflectedVelocity =
             reflect velocity normalOfCollisionTangent
+                |> Debug.log "Reflected Velocity: "
     in
         ( newPosition, reflectedVelocity )
 
@@ -162,35 +167,46 @@ slopeIntercept pointA pointB =
 
 
 collisionPoint : Vec2 -> Vec2 -> Float -> Vec2
-collisionPoint pointA pointB radius =
+collisionPoint insidePoint outsidePoint radius =
     let
         ( slope, yIntercept ) =
-            slopeIntercept pointA pointB
+            slopeIntercept insidePoint outsidePoint
 
         ( intersection1, intersection2 ) =
             intersectionOfLineAndCircle ( slope, yIntercept ) radius
 
         -- Interesting caveat, Vector2.direction is from b to a
         -- from the second position passed, to the first
-        ( xDirection, yDirection ) =
-            Vector2.direction pointB pointA
-                |> Vector2.toTuple
-
-        ( xIntersect1, yIntersect1 ) =
-            Vector2.toTuple intersection1
+        -- ( xDirection, yDirection ) =
+        --     Vector2.direction outsidePoint insidePoint
+        --         |> Vector2.toTuple
+        -- ( xIntersect1, yIntersect1 ) =
+        --     Vector2.toTuple intersection1
     in
-        if isSameSign xDirection xIntersect1 && isSameSign yDirection yIntersect1 then
-            intersection1
+        returnCloserPoint intersection1 intersection2 outsidePoint
+
+
+returnCloserPoint : Vec2 -> Vec2 -> Vec2 -> Vec2
+returnCloserPoint a b test =
+    let
+        distanceSqAT =
+            Vector2.distanceSquared test a
+
+        distanceSqBT =
+            Vector2.distanceSquared test b
+    in
+        if distanceSqAT <= distanceSqBT then
+            a
         else
-            intersection2
+            b
 
 
 {-| Do math, return the intersection point of a line we know and a cirle with origin (0, 0)
 This is the result of a system of equations for the line (y = mx + b)
 and the equation of a circle (sqrt(x^2 + y^2) = r)
 …y substitution yields a quadratic equation…
-0 = (1+m)x^2 + (2mb)x + (b^2 - r^2)
-a = 1 + slope
+0 = (1+m^2)x^2 + (2mb)x + (b^2 - r^2)
+a = 1 + slope^2
 b = (2 * slope * yIntercept)
 c = (yIntercept^2 - radius^2)
 -}
@@ -198,7 +214,7 @@ intersectionOfLineAndCircle : ( Float, Float ) -> Float -> ( Vec2, Vec2 )
 intersectionOfLineAndCircle ( slope, yIntercept ) radius =
     let
         a =
-            1 + slope
+            1 + (slope ^ 2)
 
         b =
             2 * slope * yIntercept

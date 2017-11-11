@@ -18,6 +18,7 @@ type Msg
     = KeyDown Int
     | KeyUp Int
     | TimeDelta Time
+    | End
 
 
 type alias Model =
@@ -51,6 +52,11 @@ init =
     , game = Playing <| Culture [ (npc boundaryRadius) ] (player boundaryRadius) 0
     }
         ! []
+
+
+endGame : Game
+endGame =
+    GameOver 0
 
 
 updateGame : Keys -> Game -> Game

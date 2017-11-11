@@ -15,7 +15,7 @@ module Virus
 
 import Math.Vector2 as Vector2 exposing (Vec2)
 import Collision2D as Collision exposing (Circle)
-import MyMath
+import DomainMath
 
 
 type alias Virus =
@@ -46,7 +46,7 @@ makeNpc : Float -> Float -> Vec2 -> Vec2 -> Npc
 makeNpc boundary size location velocity =
     { velocity = velocity
     , size = size
-    , location = MyMath.scaleWithinBoundary boundary size location
+    , location = DomainMath.scaleWithinBoundary boundary size location
     }
 
 
@@ -74,7 +74,7 @@ updateNpc : Float -> Npc -> Npc
 updateNpc boundaryRadius { velocity, size, location } =
     let
         ( newLoc, newVel ) =
-            MyMath.updatePositionAndVelocity location velocity boundaryRadius
+            DomainMath.updatePositionAndVelocity location velocity (boundaryRadius - size)
     in
         setNpc size newLoc newVel
 
@@ -91,7 +91,7 @@ move tuple boundaryRadius { size, location } =
     tuple
         |> Vector2.fromTuple
         |> Vector2.add location
-        |> MyMath.scaleWithinBoundary boundaryRadius size
+        |> DomainMath.scaleWithinBoundary boundaryRadius size
         |> Virus size
 
 

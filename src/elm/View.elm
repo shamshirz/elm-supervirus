@@ -4,6 +4,7 @@ import Color exposing (..)
 import Collage
 import Element
 import Html exposing (Html, button, div, p, br, text, span, Attribute)
+import Html.Events exposing (onClick)
 import Model exposing (..)
 import Virus exposing (..)
 
@@ -15,7 +16,10 @@ view { game } =
             div [] [ text <| "Game over, your score was : " ++ (toString score) ]
 
         Playing culture ->
-            displayCulture culture
+            div []
+                [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
+                , displayCulture culture
+                ]
 
 
 displayCulture : Culture -> Html Msg
