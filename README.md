@@ -25,12 +25,13 @@ Makin' gaimz.
  * ~~Smooth borders~~
  * ~~Enemy Movement~~
    * ~~Enemy wall bounce~~
-   * random in play
-   * Enemy random velocity on spawn
+   * ~~random in play~~
+   * ~~Enemy random velocity on spawn~~
    * Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)
- * Enemy Spawning
+ * Automated Enemy Spawning
+ * Win Condition
  * Streamline speed / size / display (UI work)
-   * Create some sprites
+   * Create some sprites for Virus vs. Npc
  * Improve scoring
  * Viewport?
  * GameOver View
