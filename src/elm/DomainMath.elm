@@ -1,51 +1,41 @@
 module DomainMath
     exposing
-        ( collisionPoint
-        , safeSlope
-        , inwardNormal
-        , updatePositionAndVelocity
-        , isOutsideRadius
+        ( updatePositionAndVelocity
         , scaleWithinBoundary
         )
 
-{-| A not so great performance math library specifically for
-finding the intersection of a line and a circle. We know there will be no evil
-and thus we use a `safeSlope` that always returns a value, etc etc.
+{-| The domain is 2d vector math between lines and circles
 
-The primary function here is collisionPoint. which takes two points and the radius of a circle
-assumed to have origin (0,0). It always returns the collision point from the direction you are
-moving at.
+Primary goal is finding the intersection between lines and circles,
+and "bouncing" the line off of the interior of that circle.
 
-You might wonder
+This involves finding the Vector Orthoganol Projection of the line on
+the normal line to the tangent of the intersection with the circle.
 
-  - how does it always return?
-  - What if they don't collide?
-  - What if you only collide at one point, like a tangent?
+That was a mouthful, what does it mean?
+Luckily, "normal line to the tangent of the intersection with the circle"
+happens to be a unit vector from the intersection to the origin. This is a simple
+line to find.
 
-…The world may never know
+The line we are projecting is the line that originates inside the circle and has a
+second point outside of the circle. We want that part that goes beyond the circle to
+be "orthogonally projected" back inside the the circle (this is math for - bounce off
+of the interior of the circle).
+
+Caveats. We base all assumptions on the fact that we start with a point within the
+bounding circle. If that is not the case, then we live in of world of Hurt (NaN floats)
+
+*We use the Position and Velocity types internally to keep track of what's going on
+but those aren't exposed externally*
+
+Math.Vector2.Vec2's come in, and they go out. Simple
 
 -}
 
 import Math.Vector2 as Vector2 exposing (Vec2)
 
 
-type Position
-    = Position Vec2
-
-
-type Velocity
-    = Velocity Vec2
-
-
-
--- Whole thing. Bounce of of interior of a circle.
--- Given 2 points and a radius, we return a (Point, velocity) tuple
--- If no collision, whatever, return the next point and the current velocity
--- If a collision, do the baller shit
--- 1. Determine Collision Location
--- 2. Determine vector outside of boundary (direction * length)
--- 3. Determine normal unit vector towards origin
--- 4. Reject vector on normal vector
+-- >>>>>>>>>>>>>>>>>>>>>>> PUBLIC API <<<<<<<<<<<<<<<<<<<<<<<<
 
 
 {-| Find the next point considering the boundary
@@ -59,77 +49,98 @@ and the current velocity.
 updatePositionAndVelocity : Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
 updatePositionAndVelocity point velocity radius =
     let
-        next =
-            naiveNextPosition point velocity
+        (Position next) =
+            naiveNextPosition (Position point) (Velocity velocity)
     in
-        if isOutsideRadius radius next then
-            handleCollision point next velocity radius
+        if isOutsideRadius radius (Position next) then
+            unwrap <| handleCollision (Position point) (Position next) (Velocity velocity) radius
         else
             ( next, velocity )
 
 
+{-| This function will take a location vector, try to determine it's direction,
+then scale it to the boundary (minus it's own size).
+This will put the outside edge of the virus on the boundary.
 
--- TODO: Convert everything to use these
+If we are already inside the boundary, then no modification is made
+
+-}
+scaleWithinBoundary : Float -> Float -> Vec2 -> Vec2
+scaleWithinBoundary boundary size position =
+    let
+        boundaryMinusSize =
+            boundary - size
+    in
+        if isOutsideRadius boundaryMinusSize (Position position) then
+            position
+                |> Vector2.normalize
+                |> Vector2.scale (boundaryMinusSize)
+        else
+            position
 
 
-{-| Yeesh
+
+-- Internal types to help make sense of functions / add some safety
+
+
+type Position
+    = Position Vec2
+
+
+position : ( Float, Float ) -> Position
+position ( x, y ) =
+    Position <| Vector2.vec2 x y
+
+
+type Velocity
+    = Velocity Vec2
+
+
+velocity : ( Float, Float ) -> Velocity
+velocity ( x, y ) =
+    Velocity <| Vector2.vec2 x y
+
+
+{-| Math for orthogonal projection of next point and velocity
 
 1.  find collision
 2.  find portion of vector outside
-3.  reflect that across line pointing towards origin
-4.  reflect velocity across that line too
+3.  Vector rejection (Orthogonal projection) that across line pointing towards origin
+4.  Vector rejection of velocity across that line too
 
 -}
-handleCollision : Vec2 -> Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
-handleCollision insidePoint outsidePoint velocity radius =
+handleCollision : Position -> Position -> Velocity -> Float -> ( Position, Velocity )
+handleCollision (Position insidePoint) (Position outsidePoint) (Velocity velocity) radius =
     let
-        _ =
-            Debug.log "Starting point: " insidePoint
-
-        _ =
-            Debug.log "Next Point: " outsidePoint
-
-        _ =
-            Debug.log "Some extra space\n\n" "\n\n"
-
-        intersection =
-            collisionPoint insidePoint outsidePoint radius
-                |> Debug.log "CollisionAt: "
+        (Position intersection) =
+            collisionPoint (Position insidePoint) (Position outsidePoint) radius
 
         vectorOutside =
             Vector2.sub outsidePoint intersection
-                |> Debug.log "OutsideVector: "
 
-        normalOfCollisionTangent =
+        collisionToOriginUnitVecor =
             Vector2.direction origin intersection
-                |> Debug.log "unit vector pointing back in"
 
         reflectedOusideVector =
-            reflect vectorOutside normalOfCollisionTangent
-                |> Debug.log "Reflected outside vector!"
+            reflect vectorOutside collisionToOriginUnitVecor
+
+        reflectedVelocity =
+            reflect velocity collisionToOriginUnitVecor
 
         newPosition =
             Vector2.add intersection reflectedOusideVector
-                |> Debug.log "NewPosition"
-
-        reflectedVelocity =
-            reflect velocity normalOfCollisionTangent
-                |> Debug.log "Reflected Velocity: "
     in
-        ( newPosition, reflectedVelocity )
+        ( Position newPosition, Velocity reflectedVelocity )
 
 
 {-| Rise over run, and we stay safe from NaN
 by returning the largest possible slope
 -}
-safeSlope : Vec2 -> Float
-safeSlope vec =
+safeSlope : Velocity -> Float
+safeSlope (Velocity vec) =
     let
-        rise =
-            Vector2.getY vec
-
-        run =
-            Vector2.getX vec
+        ( run, rise ) =
+            Vector2.toTuple vec
     in
         if run == 0 && rise > 0 then
             maxAbsValue
@@ -139,66 +150,47 @@ safeSlope vec =
             rise / run
 
 
-yIntercept : Vec2 -> Float -> Float
-yIntercept point slope =
-    let
-        y =
-            Vector2.getY point
-
-        x =
-            Vector2.getX point
-    in
-        y - (slope * x)
+yIntercept : Position -> Float -> Float
+yIntercept (Position point) slope =
+    (Vector2.getY point) - (slope * (Vector2.getX point))
 
 
 {-| SlopeIntercept applied between two points of a line
 Returns a tuple of (slope, yIntercept)
 -}
-slopeIntercept : Vec2 -> Vec2 -> ( Float, Float )
-slopeIntercept pointA pointB =
+slopeIntercept : Position -> Position -> ( Float, Float )
+slopeIntercept (Position pointA) (Position pointB) =
     let
         m =
-            safeSlope <| Vector2.sub pointA pointB
+            safeSlope <| Velocity <| Vector2.sub pointA pointB
 
         b =
-            yIntercept pointA m
+            yIntercept (Position pointA) m
     in
         ( m, b )
 
 
-collisionPoint : Vec2 -> Vec2 -> Float -> Vec2
+collisionPoint : Position -> Position -> Float -> Position
 collisionPoint insidePoint outsidePoint radius =
-    let
-        ( slope, yIntercept ) =
-            slopeIntercept insidePoint outsidePoint
-
-        ( intersection1, intersection2 ) =
-            intersectionOfLineAndCircle ( slope, yIntercept ) radius
-
-        -- Interesting caveat, Vector2.direction is from b to a
-        -- from the second position passed, to the first
-        -- ( xDirection, yDirection ) =
-        --     Vector2.direction outsidePoint insidePoint
-        --         |> Vector2.toTuple
-        -- ( xIntersect1, yIntersect1 ) =
-        --     Vector2.toTuple intersection1
-    in
-        returnCloserPoint intersection1 intersection2 outsidePoint
+    outsidePoint
+        |> slopeIntercept insidePoint
+        |> intersectionWithCircle radius
+        |> closerPointTo outsidePoint
 
 
-returnCloserPoint : Vec2 -> Vec2 -> Vec2 -> Vec2
-returnCloserPoint a b test =
+closerPointTo : Position -> ( Position, Position ) -> Position
+closerPointTo (Position start) ( Position a, Position b ) =
     let
         distanceSqAT =
-            Vector2.distanceSquared test a
+            Vector2.distanceSquared start a
 
         distanceSqBT =
-            Vector2.distanceSquared test b
+            Vector2.distanceSquared start b
     in
         if distanceSqAT <= distanceSqBT then
-            a
+            Position a
         else
-            b
+            Position b
 
 
 {-| Do math, return the intersection point of a line we know and a cirle with origin (0, 0)
@@ -210,8 +202,8 @@ a = 1 + slope^2
 b = (2 * slope * yIntercept)
 c = (yIntercept^2 - radius^2)
 -}
-intersectionOfLineAndCircle : ( Float, Float ) -> Float -> ( Vec2, Vec2 )
-intersectionOfLineAndCircle ( slope, yIntercept ) radius =
+intersectionWithCircle : Float -> ( Float, Float ) -> ( Position, Position )
+intersectionWithCircle radius ( slope, yIntercept ) =
     let
         a =
             1 + (slope ^ 2)
@@ -231,7 +223,7 @@ intersectionOfLineAndCircle ( slope, yIntercept ) radius =
         negY =
             (slope * negX) + yIntercept
     in
-        ( Vector2.vec2 posX posY, Vector2.vec2 negX negY )
+        ( Position <| Vector2.vec2 posX posY, Position <| Vector2.vec2 negX negY )
 
 
 {-| Applies the quadratic equation using a b c returning x
@@ -249,46 +241,6 @@ quadratic a b c =
             (-b - sqrtTerm) / (2 * a)
     in
         ( plusB, minusB )
-
-
-
---  Normal equations
-
-
-{-| get the normals, then pick the one pointing towards the origin
-The interesting thing here is, if the point is at the origin.
-then all is lost. Everything is pointing away.
--}
-inwardNormal : Vec2 -> Vec2 -> Vec2
-inwardNormal point line =
-    if Vector2.getX point == 0 && Vector2.getY point == 0 then
-        -- All must surely be lost. We have instersected at the origin.
-        -- There goes the type safety.
-        -- I'm returning a vector pointing up…I guess
-        Vector2.vec2 0 1
-    else
-        whichPointsToOrigin point <| normals line
-
-
-whichPointsToOrigin : Vec2 -> ( Vec2, Vec2 ) -> Vec2
-whichPointsToOrigin point ( vec1, vec2 ) =
-    let
-        dirToOrigin =
-            Vector2.direction origin point
-    in
-        if isSameDirection dirToOrigin vec1 then
-            vec1
-        else
-            vec2
-
-
-normals : Vec2 -> ( Vec2, Vec2 )
-normals vec =
-    let
-        ( x, y ) =
-            Vector2.toTuple vec
-    in
-        ( Vector2.vec2 x -y, Vector2.vec2 -x y )
 
 
 {-| Vector orthagonal projection on normal
@@ -312,27 +264,6 @@ reflect vector normal =
         Vector2.sub vector rhs
 
 
-{-| This function will take a location vector, try to determine it's direction,
-then scale it to the boundary (minus it's own size).
-This will put the outside edge of the virus on the boundary.
-
-If we are already inside the boundary, then no modification is made
-
--}
-scaleWithinBoundary : Float -> Float -> Vec2 -> Vec2
-scaleWithinBoundary boundary size position =
-    let
-        boundaryMinusSize =
-            boundary - size
-    in
-        if isOutsideRadius boundaryMinusSize position then
-            position
-                |> normalize
-                |> Vector2.scale (boundaryMinusSize)
-        else
-            position
-
-
 
 -- >>>>>>>>>>>>>>> UTIL <<<<<<<<<<<<<<<<<
 -- These are basically just aliases for simple math
@@ -341,48 +272,24 @@ scaleWithinBoundary boundary size position =
 
 {-| assumes origin is (0, 0)
 -}
-isOutsideRadius : Float -> Vec2 -> Bool
-isOutsideRadius radius point =
+isOutsideRadius : Float -> Position -> Bool
+isOutsideRadius radius (Position point) =
     Vector2.length point > radius
 
 
-naiveNextPosition : Vec2 -> Vec2 -> Vec2
-naiveNextPosition point velocity =
-    Vector2.add point velocity
-
-
-{-| Wrapper for normalize because we get NaN
-if you do it from the origin. This is wonky, but
-better than everything breaking
--}
-normalize : Vec2 -> Vec2
-normalize vec =
-    if (Vector2.length vec) == 0 then
-        Vector2.vec2 0 0
-    else
-        Vector2.normalize vec
-
-
-isSameSign : Float -> Float -> Bool
-isSameSign a b =
-    (a >= 0 && b >= 0) || (a < 0 && b < 0)
-
-
-isSameDirection : Vec2 -> Vec2 -> Bool
-isSameDirection a b =
-    let
-        ( xA, yA ) =
-            Vector2.toTuple a
-
-        ( xB, yB ) =
-            Vector2.toTuple b
-    in
-        isSameSign xA xB && isSameSign yA yB
+naiveNextPosition : Position -> Velocity -> Position
+naiveNextPosition (Position point) (Velocity velocity) =
+    Position <| Vector2.add point velocity
 
 
 origin : Vec2
 origin =
     Vector2.vec2 0 0
+
+
+unwrap : ( Position, Velocity ) -> ( Vec2, Vec2 )
+unwrap ( Position pos, Velocity vel ) =
+    ( pos, vel )
 
 
 
