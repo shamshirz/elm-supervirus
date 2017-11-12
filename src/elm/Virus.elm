@@ -15,8 +15,8 @@ module Virus
         )
 
 import Math.Vector2 as Vector2 exposing (Vec2)
-import Collision2D as Collision exposing (Circle)
 import DomainMath
+import Collision exposing (isCollision)
 
 
 type alias Virus =
@@ -100,6 +100,11 @@ move tuple boundaryRadius { size, location } =
 -- Collisions
 
 
+type Mortal a
+    = Alive a
+    | Dead
+
+
 {-| handleCollisions
 Handles multiple collisions and returns
 the virus wrapped in the status of the collisions
@@ -115,11 +120,6 @@ handleCollisions player npcs =
             List.foldl handleCollision (Alive player) collisions
     in
         ( mortalVirus, others )
-
-
-type Mortal a
-    = Alive a
-    | Dead
 
 
 {-| handleCollision
@@ -138,7 +138,7 @@ handleCollision enemy mortalPlayer =
     case mortalPlayer of
         Alive player ->
             if player.size >= enemy.size then
-                Alive <| Virus (player.size + 1) player.location
+                player |> eat enemy
             else
                 Dead
 
@@ -146,17 +146,13 @@ handleCollision enemy mortalPlayer =
             Dead
 
 
-isCollision : Virus -> Npc -> Bool
-isCollision first second =
-    Collision.circleToCircle
-        (collidableToCircle first.size first.location)
-        (collidableToCircle second.size second.location)
+eat : Npc -> Virus -> Mortal Virus
+eat enemy { location, size } =
+    Alive <| Virus (size + transferableEnergy (enemy)) location
 
 
-collidableToCircle : Float -> Vec2 -> Circle
-collidableToCircle size location =
-    let
-        ( x, y ) =
-            Vector2.toTuple location
-    in
-        Collision.circle x y size
+{-| Radius increase for a kill
+-}
+transferableEnergy : Npc -> Float
+transferableEnergy { size } =
+    size * 0.25
