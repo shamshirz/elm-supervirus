@@ -3,6 +3,7 @@ module Virus
         ( handleCollisions
         , handleCollision
         , location
+        , makeNpc
         , Mortal(..)
         , move
         , npc

@@ -5,6 +5,7 @@ import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
 import Virus exposing (..)
 import Math.Vector2 as Vector2
+import Random exposing (Generator)
 
 
 -- 30 FPS
@@ -16,10 +17,12 @@ gameLoopPeriod =
 
 
 type Msg
-    = KeyDown Int
+    = End
+    | GetRandom Virus
+    | KeyDown Int
     | KeyUp Int
+    | Spawn Npc
     | TimeDelta Time
-    | End
 
 
 type alias Model =
@@ -116,3 +119,77 @@ handleCollisions score player npcs =
 
             Alive virus ->
                 Playing <| Culture remainingNpcs virus (score + 1)
+
+
+
+-- GetRandom
+
+
+randomNpc : Virus -> Generator Npc
+randomNpc virus =
+    let
+        randomSize =
+            Random.float (virus.size - 1) (virus.size + 1)
+
+        randomLocation =
+            randomPosition virus
+    in
+        Random.map3 (makeNpc boundaryRadius) randomSize randomLocation randomVelocity
+
+
+randomPosition : Virus -> Generator Vector2.Vec2
+randomPosition { location } =
+    let
+        ( ( minX, maxX ), ( minY, maxY ) ) =
+            rangeOutsideMyQuad location
+
+        outsideMyQuad =
+            Random.pair (Random.float minX maxX) (Random.float minY maxY)
+    in
+        outsideMyQuad |> Random.map (\pair -> Vector2.fromTuple pair)
+
+
+randomVelocity : Generator Vector2.Vec2
+randomVelocity =
+    Random.pair (Random.float -4 4) (Random.float -4 4)
+        |> Random.map (\pair -> Vector2.fromTuple pair)
+
+
+rangeOutsideMyQuad : Vector2.Vec2 -> ( ( Float, Float ), ( Float, Float ) )
+rangeOutsideMyQuad myPosition =
+    let
+        ( x, y ) =
+            Vector2.toTuple myPosition
+
+        xRange =
+            if x > 0 then
+                ( -1 * boundaryRadius, 0 )
+            else
+                ( 0, boundaryRadius )
+
+        yRange =
+            if y > 0 then
+                ( -1 * boundaryRadius, 0 )
+            else
+                ( 0, boundaryRadius )
+    in
+        ( xRange, yRange )
+
+
+
+-- Spawn
+
+
+addNpc : Npc -> Model -> Model
+addNpc npc model =
+    case model.game of
+        GameOver _ ->
+            model
+
+        Playing culture ->
+            { model | game = Playing (addNpcToCulture npc culture) }
+
+
+addNpcToCulture : Npc -> Culture -> Culture
+addNpcToCulture npc culture =
+    { culture | npcs = npc :: culture.npcs }

@@ -18,6 +18,7 @@ view { game } =
         Playing culture ->
             div []
                 [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
+                , div [] [ Html.button [ onClick <| GetRandom culture.player ] [ text "Get Random" ] ]
                 , displayCulture culture
                 ]
 

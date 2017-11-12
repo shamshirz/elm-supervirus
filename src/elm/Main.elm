@@ -9,6 +9,8 @@ import Html exposing (div)
 import Html exposing (Html)
 import Keyboard exposing (..)
 import Time exposing (Time)
+import Random
+import Virus exposing (Virus)
 
 
 main : Program Never Model Msg
@@ -44,6 +46,18 @@ update msg model =
         End ->
             { model | game = endGame } ! []
 
+        KeyDown keyNum ->
+            { model | keys = Keys.updateFromKeyCode keyNum True model.keys } ! []
+
+        KeyUp keyNum ->
+            { model | keys = Keys.updateFromKeyCode keyNum False model.keys } ! []
+
+        Spawn npc ->
+            Model.addNpc npc model ! []
+
+        GetRandom virus ->
+            model ! [ randomCmd virus ]
+
         TimeDelta dt ->
             let
                 ( clock, newModel ) =
@@ -51,13 +65,12 @@ update msg model =
             in
                 { newModel | clock = clock } ! []
 
-        KeyDown keyNum ->
-            { model | keys = Keys.updateFromKeyCode keyNum True model.keys } ! []
-
-        KeyUp keyNum ->
-            { model | keys = Keys.updateFromKeyCode keyNum False model.keys } ! []
-
 
 tick : Time -> Model -> Model
 tick _ ({ keys, game } as model) =
     { model | game = updateGame keys game }
+
+
+randomCmd : Virus -> Cmd Msg
+randomCmd virus =
+    Random.generate Spawn <| Model.randomNpc virus
