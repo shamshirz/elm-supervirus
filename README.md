@@ -28,7 +28,9 @@ Makin' gaimz.
    * ~~random in play~~
    * ~~Enemy random velocity on spawn~~
    * Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)
- * Automated Enemy Spawning
+ * ~~Automated Enemy Spawning~~
+ * Improve pacing (user is really slow)
+ * Improve Images (specifically enemy overlap)
  * Win Condition
  * Streamline speed / size / display (UI work)
    * Create some sprites for Virus vs. Npc
