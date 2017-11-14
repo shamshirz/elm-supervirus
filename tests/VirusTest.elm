@@ -1,12 +1,14 @@
 module VirusTest exposing (..)
 
-import Expect exposing (Expectation)
+import Expect exposing (Expectation, FloatingPointTolerance(..))
+import Fuzz
 
 
 -- import Fuzz exposing (Fuzzer, int, list, string)
 
 import Test exposing (..)
 import Virus exposing (..)
+import Math.Vector2 as Vec2
 
 
 testingBoundary : Float
@@ -51,10 +53,10 @@ suite =
                         player =
                             Alive <| newVirus 5 ( 0, 0 ) testingBoundary
 
-                        biggerVirus =
-                            newVirus 10 ( 0, 0 ) testingBoundary
+                        biggerNpc =
+                            makeNpc testingBoundary 10 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
                     in
-                        case handleCollision biggerVirus player of
+                        case handleCollision biggerNpc player of
                             Dead ->
                                 Expect.pass
 
@@ -66,25 +68,25 @@ suite =
                         player =
                             Alive <| newVirus 5 ( 0, 0 ) testingBoundary
 
-                        biggerVirus =
-                            newVirus 2 ( 0, 0 ) testingBoundary
+                        smallerNpc =
+                            makeNpc testingBoundary 2 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
                     in
-                        case handleCollision biggerVirus player of
+                        case handleCollision smallerNpc player of
                             Dead ->
                                 Expect.fail "We should have lived, but didn't!"
 
                             Alive virus ->
-                                Expect.equal virus.size 6
+                                Expect.equal virus.size 5.2
             , test "A dead virus can't come back to life" <|
                 \_ ->
                     let
                         player =
                             Dead
 
-                        biggerVirus =
-                            newVirus 2 ( 0, 0 ) testingBoundary
+                        smallerNpc =
+                            makeNpc testingBoundary 2 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
                     in
-                        case handleCollision biggerVirus player of
+                        case handleCollision smallerNpc player of
                             Dead ->
                                 Expect.pass
 
@@ -99,17 +101,34 @@ suite =
                         player =
                             newVirus 5 ( 0, 0 ) testingBoundary
 
-                        otherVirus =
-                            newVirus 2 ( 0, 0 ) testingBoundary
+                        smallerNpc =
+                            makeNpc testingBoundary 2 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
 
                         threeOfThem =
-                            [ otherVirus, otherVirus, otherVirus ]
+                            [ smallerNpc, smallerNpc, smallerNpc ]
                     in
                         case handleCollisions player threeOfThem of
                             ( Dead, _ ) ->
                                 Expect.fail "we should have survived the onslaught!"
 
                             ( Alive virus, _ ) ->
-                                Expect.equal virus.size 8
+                                virus.size
+                                    |> Expect.within (Relative 0.0001) 5.6
+            ]
+        , describe "Virus.updateNpc"
+            -- fuzzy test for math!
+            [ fuzz3 Fuzz.float Fuzz.float Fuzz.float "restores the original string if you run it again" <|
+                \fl1 fl2 fl3 ->
+                    let
+                        virus =
+                            Virus.newVirus fl1 ( fl2, fl3 ) 100
+
+                        position =
+                            location virus
+                    in
+                        position
+                            |> Vec2.fromTuple
+                            |> Vec2.length
+                            |> Expect.within (Relative 100.0001) 0
             ]
         ]
