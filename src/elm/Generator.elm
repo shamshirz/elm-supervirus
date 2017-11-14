@@ -31,8 +31,11 @@ npc virus boundaryRadius =
 
         randomLocation =
             relativePosition virus boundaryRadius
+
+        velocity =
+            randomVelocity 1
     in
-        Random.map3 (makeNpc boundaryRadius) randomSize randomLocation randomVelocity
+        Random.map3 (makeNpc boundaryRadius) randomSize randomLocation velocity
 
 
 
@@ -47,8 +50,11 @@ startingNpc boundaryRadius =
 
         randomLocation =
             relativeToStart boundaryRadius
+
+        velocity =
+            randomVelocity 2
     in
-        Random.map3 (makeNpc boundaryRadius) randomSize randomLocation randomVelocity
+        Random.map3 (makeNpc boundaryRadius) randomSize randomLocation velocity
 
 
 relativeSize : Float -> Generator Float
@@ -74,10 +80,14 @@ relativePosition { location } boundaryRadius =
         outsideMyQuad |> Random.map Vector2.fromTuple
 
 
-randomVelocity : Generator Vector2.Vec2
-randomVelocity =
-    Random.pair (Random.float -4 4) (Random.float -4 4)
-        |> Random.map (\pair -> Vector2.fromTuple pair)
+randomVelocity : Float -> Generator Vector2.Vec2
+randomVelocity vel =
+    let
+        range =
+            Random.float (-1 * vel) vel
+    in
+        Random.pair range range
+            |> Random.map (\pair -> Vector2.fromTuple pair)
 
 
 {-| Do you dare try and solve for all points within a circle and outside of another?

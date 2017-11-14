@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import AnimationFrame
 import Clock exposing (Clock)
-import Model exposing (Msg(..), Model, updateGame, endGame)
+import Model exposing (Msg(..), Game(..), Model, updateGame, endGame)
 import Keys
 import View exposing (view)
 import Html exposing (div)
@@ -88,7 +88,7 @@ update msg model =
                 ( clock, newModel ) =
                     Clock.update tick dt model.clock model
             in
-                { newModel | clock = clock } ! []
+                { newModel | clock = clock } ! [ sustainPopulation model newModel ]
 
 
 tick : Time -> Model -> Model
@@ -104,3 +104,29 @@ npcCmd virus =
 populateCmd : Cmd Msg
 populateCmd =
     Random.generate Populate <| Generator.startingNpcs Model.boundaryRadius 10
+
+
+sustainPopulation : Model -> Model -> Cmd Msg
+sustainPopulation lastState currentState =
+    case ( lastState.game, currentState.game ) of
+        ( Playing lastTick, Playing thisTick ) ->
+            let
+                lastNpcs =
+                    List.length lastTick.npcs
+
+                thisNpcs =
+                    List.length thisTick.npcs
+
+                _ =
+                    Debug.log "npc Count, lastRound" lastNpcs
+
+                _ =
+                    Debug.log "npc Count, thisRound" thisNpcs
+            in
+                if lastNpcs > thisNpcs then
+                    npcCmd thisTick.player
+                else
+                    Cmd.none
+
+        _ ->
+            Cmd.none
