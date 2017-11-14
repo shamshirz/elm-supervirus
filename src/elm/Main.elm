@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import AnimationFrame
 import Clock exposing (Clock)
-import Model exposing (Msg(..), Model, updateGame, endGame, init)
+import Model exposing (Msg(..), Model, updateGame, endGame)
 import Keys
 import View exposing (view)
 import Html exposing (div)
@@ -11,6 +11,7 @@ import Keyboard exposing (..)
 import Time exposing (Time)
 import Random
 import Virus exposing (Virus)
+import Generator
 
 
 main : Program Never Model Msg
@@ -37,6 +38,27 @@ subscriptions model =
 
 
 
+-- INIT
+
+
+{-| milliseconds between frames
+30 FPS
+-}
+gameLoopPeriod : Time.Time
+gameLoopPeriod =
+    33 * Time.millisecond
+
+
+init : ( Model, Cmd Msg )
+init =
+    { clock = Clock.withPeriod gameLoopPeriod
+    , keys = Keys.init
+    , game = Model.initGame
+    }
+        ! [ populateCmd ]
+
+
+
 -- UPDATE
 
 
@@ -45,6 +67,9 @@ update msg model =
     case msg of
         End ->
             { model | game = endGame } ! []
+
+        GetRandom virus ->
+            model ! [ npcCmd virus ]
 
         KeyDown keyNum ->
             { model | keys = Keys.updateFromKeyCode keyNum True model.keys } ! []
@@ -55,8 +80,8 @@ update msg model =
         Spawn npc ->
             Model.addNpc npc model ! []
 
-        GetRandom virus ->
-            model ! [ randomCmd virus ]
+        Populate npcs ->
+            List.foldl Model.addNpc model npcs ! []
 
         TimeDelta dt ->
             let
@@ -71,6 +96,11 @@ tick _ ({ keys, game } as model) =
     { model | game = updateGame keys game }
 
 
-randomCmd : Virus -> Cmd Msg
-randomCmd virus =
-    Random.generate Spawn <| Model.randomNpc virus
+npcCmd : Virus -> Cmd Msg
+npcCmd virus =
+    Random.generate Spawn <| Generator.npc virus Model.boundaryRadius
+
+
+populateCmd : Cmd Msg
+populateCmd =
+    Random.generate Populate <| Generator.startingNpcs Model.boundaryRadius 10

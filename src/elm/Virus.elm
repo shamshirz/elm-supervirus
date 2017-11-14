@@ -156,4 +156,4 @@ eat enemy { location, size } =
 -}
 transferableEnergy : Npc -> Float
 transferableEnergy { size } =
-    size * 0.25
+    size * 0.1
