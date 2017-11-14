@@ -27,7 +27,7 @@ Makin' gaimz.
    * ~~Enemy wall bounce~~
    * ~~random in play~~
    * ~~Enemy random velocity on spawn~~
-   * Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)
+   * ~~Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)~~
  * ~~Automated Enemy Spawning~~
  * Improve pacing (user is really slow)
  * Improve Images (specifically enemy overlap)
