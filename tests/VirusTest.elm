@@ -121,7 +121,7 @@ suite =
                 \fl1 fl2 fl3 ->
                     let
                         virus =
-                            Virus.newVirus fl1 ( fl2, fl3 ) 100
+                            Virus.newVirus 20 ( fl2, fl3 ) 100
 
                         position =
                             location virus
