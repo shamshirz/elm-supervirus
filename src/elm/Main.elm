@@ -55,7 +55,7 @@ init =
     , keys = Keys.init
     , game = Model.initGame
     }
-        ! [ populateCmd ]
+        ! []
 
 
 
@@ -79,6 +79,9 @@ update msg model =
 
         Spawn npc ->
             Model.addNpc npc model ! []
+
+        StartGame ->
+            { model | game = Model.startGame } ! [ populateCmd ]
 
         Populate npcs ->
             List.foldl Model.addNpc model npcs ! []

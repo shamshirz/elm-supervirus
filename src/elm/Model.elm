@@ -13,6 +13,7 @@ type Msg
     | KeyUp Int
     | Populate (List Npc)
     | Spawn Npc
+    | StartGame
     | TimeDelta Time
 
 
@@ -24,8 +25,9 @@ type alias Model =
 
 
 type Game
-    = Playing Culture
-    | GameOver Int
+    = GameOver Int
+    | Lobby
+    | Playing Culture
 
 
 type alias Culture =
@@ -37,6 +39,11 @@ type alias Culture =
 
 initGame : Game
 initGame =
+    Lobby
+
+
+startGame : Game
+startGame =
     Playing <| Culture [] (player boundaryRadius) 0
 
 
@@ -55,6 +62,9 @@ updateGame keys game =
     case game of
         GameOver score ->
             GameOver score
+
+        Lobby ->
+            Lobby
 
         Playing culture ->
             culture
@@ -105,6 +115,9 @@ addNpc : Npc -> Model -> Model
 addNpc npc model =
     case model.game of
         GameOver _ ->
+            model
+
+        Lobby ->
             model
 
         Playing culture ->

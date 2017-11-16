@@ -15,6 +15,12 @@ view { game } =
         GameOver score ->
             div [] [ text <| "Game over, your score was : " ++ (toString score) ]
 
+        Lobby ->
+            div []
+                [ text "Welcome to 2uperVirus!"
+                , div [] [ Html.button [ onClick StartGame ] [ text "Start" ] ]
+                ]
+
         Playing culture ->
             div []
                 [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
