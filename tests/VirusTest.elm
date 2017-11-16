@@ -115,13 +115,15 @@ suite =
                                 virus.size
                                     |> Expect.within (Relative 0.0001) 5.6
             ]
-        , describe "Virus.updateNpc"
-            -- fuzzy test for math!
-            [ fuzz3 Fuzz.float Fuzz.float Fuzz.float "restores the original string if you run it again" <|
+        , describe "Virus.newVirus"
+            [ fuzz3 Fuzz.float Fuzz.float Fuzz.float "a new virus will always start in the play area" <|
                 \fl1 fl2 fl3 ->
                     let
+                        positiveRandom =
+                            abs fl1
+
                         virus =
-                            Virus.newVirus 20 ( fl2, fl3 ) 100
+                            Virus.newVirus positiveRandom ( fl2, fl3 ) (positiveRandom * 2)
 
                         position =
                             location virus
