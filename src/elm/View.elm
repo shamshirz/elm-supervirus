@@ -1,5 +1,6 @@
 module View exposing (view)
 
+import Config exposing (boundaryRadius)
 import Color exposing (..)
 import Collage
 import Element
@@ -13,7 +14,10 @@ view : Model -> Html Msg
 view { game } =
     case game of
         GameOver score ->
-            div [] [ text <| "Game over, your score was : " ++ (toString score) ]
+            div []
+                [ text <| "Game over, your score was : " ++ (toString score)
+                , div [] [ Html.button [ onClick StartGame ] [ text "Restart" ] ]
+                ]
 
         Lobby ->
             div []
@@ -21,10 +25,9 @@ view { game } =
                 , div [] [ Html.button [ onClick StartGame ] [ text "Start" ] ]
                 ]
 
-        Playing culture ->
+        Playing _ _ culture ->
             div []
                 [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
-                , div [] [ Html.button [ onClick <| GetRandom culture.player ] [ text "Get Random" ] ]
                 , displayCulture culture
                 ]
 

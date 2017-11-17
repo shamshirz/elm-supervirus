@@ -15,9 +15,10 @@ module Virus
         , Virus
         )
 
-import Math.Vector2 as Vector2 exposing (Vec2)
-import DomainMath
 import Collision exposing (isCollision)
+import Config exposing (npcStartingSize, playerStartingSize)
+import DomainMath
+import Math.Vector2 as Vector2 exposing (Vec2)
 
 
 type alias Virus =
@@ -41,7 +42,7 @@ setVelocity vel mover =
 
 npc : Float -> Npc
 npc boundary =
-    makeNpc boundary 4 (Vector2.vec2 10 10) (Vector2.vec2 1 2)
+    makeNpc boundary npcStartingSize (Vector2.vec2 10 10) (Vector2.vec2 1 2)
 
 
 makeNpc : Float -> Float -> Vec2 -> Vec2 -> Npc
@@ -64,7 +65,7 @@ setNpc size location velocity =
 -}
 player : Float -> Virus
 player =
-    newVirus 5 ( 0, 0 )
+    newVirus playerStartingSize ( 0, 0 )
 
 
 location : Virus -> ( Float, Float )

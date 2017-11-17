@@ -4,11 +4,11 @@ import Clock exposing (Clock)
 import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
 import Virus exposing (..)
+import Config exposing (gameLoopPeriod, boundaryRadius)
 
 
 type Msg
     = End
-    | GetRandom Virus
     | KeyDown Int
     | KeyUp Int
     | Populate (List Npc)
@@ -18,16 +18,14 @@ type Msg
 
 
 type alias Model =
-    { clock : Clock
-    , keys : Keys.Keys
-    , game : Game
+    { game : Game
     }
 
 
 type Game
     = GameOver Int
     | Lobby
-    | Playing Culture
+    | Playing Keys Clock Culture
 
 
 type alias Culture =
@@ -37,6 +35,10 @@ type alias Culture =
     }
 
 
+
+-- GAME submodel
+
+
 initGame : Game
 initGame =
     Lobby
@@ -44,12 +46,7 @@ initGame =
 
 startGame : Game
 startGame =
-    Playing <| Culture [] (player boundaryRadius) 0
-
-
-boundaryRadius : Float
-boundaryRadius =
-    100
+    Playing Keys.init (Clock.withPeriod gameLoopPeriod) <| Culture [] (player boundaryRadius) 0
 
 
 endGame : Game
@@ -57,22 +54,28 @@ endGame =
     GameOver 0
 
 
-updateGame : Keys -> Game -> Game
-updateGame keys game =
+mapKeys : Keys -> Game -> Game
+mapKeys keys game =
     case game of
-        GameOver score ->
-            GameOver score
+        Playing _ clock culture ->
+            Playing keys clock culture
 
-        Lobby ->
-            Lobby
-
-        Playing culture ->
-            culture
-                |> updateCulture keys
+        _ ->
+            game
 
 
-updateCulture : Keys -> Culture -> Game
-updateCulture keys { npcs, player, score } =
+mapClock : Clock -> Game -> Game
+mapClock incomingClock game =
+    case game of
+        Playing keys _ culture ->
+            Playing keys incomingClock culture
+
+        _ ->
+            game
+
+
+updatePlayingState : Keys -> Clock -> Culture -> Game
+updatePlayingState keys clock { npcs, player, score } =
     let
         newPlayer =
             move (Keys.keysToTuple keys) boundaryRadius player
@@ -80,21 +83,20 @@ updateCulture keys { npcs, player, score } =
         newNpcs =
             updateNpcs boundaryRadius npcs
     in
-        handleCollisions score newPlayer newNpcs
+        handleCollisions keys clock score newPlayer newNpcs
 
 
-{-| updateNpcs
-This is the place where the magic AI happens
-probably just bounce at the reflected angle off the walls
-Which would mean I need to track trajectory
--}
 updateNpcs : Float -> List Npc -> List Npc
 updateNpcs boundaryRadius npcs =
     List.map (updateNpc boundaryRadius) npcs
 
 
-handleCollisions : Int -> Virus -> List Npc -> Game
-handleCollisions score player npcs =
+
+-- I'm bloated, clean me!
+
+
+handleCollisions : Keys -> Clock -> Int -> Virus -> List Npc -> Game
+handleCollisions keys clock score player npcs =
     let
         ( mortalVirus, remainingNpcs ) =
             Virus.handleCollisions player npcs
@@ -104,7 +106,7 @@ handleCollisions score player npcs =
                 GameOver score
 
             Alive virus ->
-                Playing <| Culture remainingNpcs virus (score + 1)
+                Playing keys clock <| Culture remainingNpcs virus (score + 1)
 
 
 
@@ -120,8 +122,8 @@ addNpc npc model =
         Lobby ->
             model
 
-        Playing culture ->
-            { model | game = Playing (addNpcToCulture npc culture) }
+        Playing keys clock culture ->
+            { model | game = Playing keys clock (addNpcToCulture npc culture) }
 
 
 addNpcToCulture : Npc -> Culture -> Culture

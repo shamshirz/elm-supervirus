@@ -2,8 +2,9 @@ module Main exposing (..)
 
 import AnimationFrame
 import Clock exposing (Clock)
-import Model exposing (Msg(..), Game(..), Model, updateGame, endGame)
-import Keys
+import Config
+import Model as M exposing (Msg(..), Game(..), Model, Culture)
+import Keys exposing (Keys)
 import View exposing (view)
 import Html exposing (div)
 import Html exposing (Html)
@@ -29,33 +30,26 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ Keyboard.downs KeyDown
-        , Keyboard.ups KeyUp
-        , AnimationFrame.diffs TimeDelta
-        ]
+subscriptions { game } =
+    case game of
+        Playing _ _ _ ->
+            Sub.batch
+                [ Keyboard.downs KeyDown
+                , Keyboard.ups KeyUp
+                , AnimationFrame.diffs TimeDelta
+                ]
+
+        _ ->
+            Sub.none
 
 
 
 -- INIT
 
 
-{-| milliseconds between frames
-30 FPS
--}
-gameLoopPeriod : Time.Time
-gameLoopPeriod =
-    33 * Time.millisecond
-
-
 init : ( Model, Cmd Msg )
 init =
-    { clock = Clock.withPeriod gameLoopPeriod
-    , keys = Keys.init
-    , game = Model.initGame
-    }
-        ! []
+    { game = M.initGame } ! []
 
 
 
@@ -66,65 +60,80 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         End ->
-            { model | game = endGame } ! []
-
-        GetRandom virus ->
-            model ! [ npcCmd virus ]
+            { model | game = M.endGame } ! []
 
         KeyDown keyNum ->
-            { model | keys = Keys.updateFromKeyCode keyNum True model.keys } ! []
+            handleKeyAction keyNum True model
 
         KeyUp keyNum ->
-            { model | keys = Keys.updateFromKeyCode keyNum False model.keys } ! []
+            handleKeyAction keyNum False model
 
         Spawn npc ->
-            Model.addNpc npc model ! []
+            M.addNpc npc model ! []
 
         StartGame ->
-            { model | game = Model.startGame } ! [ populateCmd ]
+            { model | game = M.startGame } ! [ populateCmd ]
 
         Populate npcs ->
-            List.foldl Model.addNpc model npcs ! []
+            List.foldl M.addNpc model npcs ! []
 
         TimeDelta dt ->
+            handleClockTick dt model
+
+
+handleKeyAction : Int -> Bool -> Model -> ( Model, Cmd Msg )
+handleKeyAction keyNum isDown model =
+    case model.game of
+        Playing keys _ _ ->
+            { model | game = M.mapKeys (Keys.updateFromKeyCode keyNum isDown keys) model.game } ! []
+
+        _ ->
+            model ! []
+
+
+handleClockTick : Time -> Model -> ( Model, Cmd Msg )
+handleClockTick delta model =
+    case model.game of
+        Playing keys clock culture ->
             let
-                ( clock, newModel ) =
-                    Clock.update tick dt model.clock model
+                ( newClock, newModel ) =
+                    Clock.update (tick keys clock culture) delta clock model
             in
-                { newModel | clock = clock } ! [ sustainPopulation model newModel ]
+                { newModel | game = M.mapClock newClock newModel.game } ! [ sustainPopulation model newModel ]
+
+        _ ->
+            model ! []
 
 
-tick : Time -> Model -> Model
-tick _ ({ keys, game } as model) =
-    { model | game = updateGame keys game }
+tick : Keys -> Clock -> Culture -> Time -> Model -> Model
+tick keys clock culture _ model =
+    { model | game = M.updatePlayingState keys clock culture }
+
+
+
+-- CMDs
 
 
 npcCmd : Virus -> Cmd Msg
 npcCmd virus =
-    Random.generate Spawn <| Generator.npc virus Model.boundaryRadius
+    Random.generate Spawn <| Generator.npc virus Config.boundaryRadius
 
 
 populateCmd : Cmd Msg
 populateCmd =
-    Random.generate Populate <| Generator.startingNpcs Model.boundaryRadius 10
+    Random.generate Populate <| Generator.startingNpcs Config.boundaryRadius 10
 
 
 sustainPopulation : Model -> Model -> Cmd Msg
 sustainPopulation lastState currentState =
     case ( lastState.game, currentState.game ) of
-        ( Playing lastTick, Playing thisTick ) ->
+        ( Playing _ _ lastTick, Playing _ _ thisTick ) ->
             let
                 lastNpcs =
                     List.length lastTick.npcs
 
                 thisNpcs =
                     List.length thisTick.npcs
-
-                _ =
-                    Debug.log "npc Count, lastRound" lastNpcs
-
-                _ =
-                    Debug.log "npc Count, thisRound" thisNpcs
             in
                 if lastNpcs > thisNpcs then
                     npcCmd thisTick.player
