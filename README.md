@@ -30,10 +30,13 @@ Makin' gaimz.
    * ~~Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)~~
  * ~~Automated Enemy Spawning~~
  * Improve pacing (user is really slow)
+   * Apply velocity and acceleration to user
    * Play tests (private beta (public repo lol) Sam, RJ, Pete, Dave)
- * Move the clock into the game.
-   * If we are in the start state or gameOver state, the clock isn't running
+ * ~~Move the clock into the game.~~
+   * ~~If we are in the start state or gameOver state, the clock isn't running~~
+   * ~~Subscriptions only apply during Playing state~~
  * Allow pause
+ * Apply delta to movement, instead of just tick size 1
  * Streamline speed / size / display (UI work)
    * Improve Images (specifically enemy overlap)
    * Create some sprites for Virus vs. Npc
