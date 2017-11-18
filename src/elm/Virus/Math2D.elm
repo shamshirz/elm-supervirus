@@ -1,4 +1,4 @@
-module DomainMath
+module Virus.Math2D
     exposing
         ( updatePositionAndVelocity
         , scaleWithinBoundary

@@ -50,7 +50,7 @@ banner player score =
         ]
 
 
-drawCharacters : Virus -> List Npc -> Html msg
+drawCharacters : Virus -> List Virus -> Html msg
 drawCharacters playerVirus npcs =
     draw <| player playerVirus :: List.map npc npcs
 
@@ -63,13 +63,13 @@ draw viruses =
 
 
 player : Virus -> Collage.Form
-player virus =
-    drawVirus Color.blue virus
+player =
+    drawVirus Color.blue
 
 
-npc : Npc -> Collage.Form
-npc { velocity, size, location } =
-    drawVirus Color.darkRed (Virus size location)
+npc : Virus -> Collage.Form
+npc =
+    drawVirus Color.darkRed
 
 
 petriDish : Collage.Form

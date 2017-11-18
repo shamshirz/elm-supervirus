@@ -3,16 +3,16 @@ module Model exposing (..)
 import Clock exposing (Clock)
 import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
-import Virus exposing (..)
-import Config exposing (gameLoopPeriod, boundaryRadius)
+import Virus exposing (BoundaryConflict(..), Mortal(..), Virus)
+import Config exposing (gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize)
 
 
 type Msg
     = End
     | KeyDown Int
     | KeyUp Int
-    | Populate (List Npc)
-    | Spawn Npc
+    | Populate (List Virus)
+    | Spawn Virus
     | StartGame
     | TimeDelta Time
 
@@ -29,7 +29,7 @@ type Game
 
 
 type alias Culture =
-    { npcs : List Npc
+    { npcs : List Virus
     , player : Virus
     , score : Int
     }
@@ -39,6 +39,11 @@ type alias Culture =
 -- GAME submodel
 
 
+newPlayer : Virus
+newPlayer =
+    Virus.player playerStartingSize
+
+
 initGame : Game
 initGame =
     Lobby
@@ -46,7 +51,8 @@ initGame =
 
 startGame : Game
 startGame =
-    Playing Keys.init (Clock.withPeriod gameLoopPeriod) <| Culture [] (player boundaryRadius) 0
+    Playing Keys.init (Clock.withPeriod gameLoopPeriod) <|
+        Culture [] newPlayer 0
 
 
 endGame : Game
@@ -78,28 +84,13 @@ updatePlayingState : Keys -> Clock -> Culture -> Game
 updatePlayingState keys clock { npcs, player, score } =
     let
         newPlayer =
-            move (Keys.keysToTuple keys) boundaryRadius player
+            movePlayer boundaryRadius keys player
 
         newNpcs =
-            updateNpcs boundaryRadius npcs
-    in
-        handleCollisions keys clock score newPlayer newNpcs
+            List.map (moveNpc boundaryRadius) npcs
 
-
-updateNpcs : Float -> List Npc -> List Npc
-updateNpcs boundaryRadius npcs =
-    List.map (updateNpc boundaryRadius) npcs
-
-
-
--- I'm bloated, clean me!
-
-
-handleCollisions : Keys -> Clock -> Int -> Virus -> List Npc -> Game
-handleCollisions keys clock score player npcs =
-    let
         ( mortalVirus, remainingNpcs ) =
-            Virus.handleCollisions player npcs
+            Virus.resolveBattles newPlayer newNpcs
     in
         case mortalVirus of
             Dead ->
@@ -109,11 +100,24 @@ handleCollisions keys clock score player npcs =
                 Playing keys clock <| Culture remainingNpcs virus (score + 1)
 
 
+movePlayer : Float -> Keys -> Virus -> Virus
+movePlayer boundaryRadius keys player =
+    player
+        |> Virus.applyAcceleration (Keys.keysToTuple keys)
+        |> Virus.move boundaryRadius Bounce
+
+
+moveNpc : Float -> Virus -> Virus
+moveNpc boundaryRadius npc =
+    npc
+        |> Virus.move boundaryRadius Bounce
+
+
 
 -- Spawn
 
 
-addNpc : Npc -> Model -> Model
+addNpc : Virus -> Model -> Model
 addNpc npc model =
     case model.game of
         GameOver _ ->
@@ -126,6 +130,6 @@ addNpc npc model =
             { model | game = Playing keys clock (addNpcToCulture npc culture) }
 
 
-addNpcToCulture : Npc -> Culture -> Culture
+addNpcToCulture : Virus -> Culture -> Culture
 addNpcToCulture npc culture =
     { culture | npcs = npc :: culture.npcs }

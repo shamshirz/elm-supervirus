@@ -1,4 +1,4 @@
-module Collision exposing (isCollision)
+module Virus.Collision exposing (isCollision)
 
 import Collision2D as Collision exposing (Circle)
 import Math.Vector2 as Vector2 exposing (Vec2)
