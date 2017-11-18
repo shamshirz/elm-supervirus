@@ -115,14 +115,14 @@ tick keys clock culture _ model =
 
 npcCmd : Virus -> Cmd Msg
 npcCmd virus =
-    Random.generate Spawn <| Virus.random virus Config.boundaryRadius 4
+    Random.generate Spawn <| Virus.random virus Config.boundaryRadius Config.maxNpcVelocity
 
 
 populateCmd : Cmd Msg
 populateCmd =
     Random.generate Populate <|
         Random.list 10
-            (Virus.random (Virus.player Config.playerStartingSize) Config.boundaryRadius 4)
+            (Virus.random (Virus.player Config.playerStartingSize) Config.boundaryRadius Config.maxNpcVelocity)
 
 
 sustainPopulation : Model -> Model -> Cmd Msg

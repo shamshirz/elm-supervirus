@@ -30,7 +30,7 @@ Makin' gaimz.
    * ~~Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)~~
  * ~~Automated Enemy Spawning~~
  * Improve pacing (user is really slow)
-   * Apply velocity and acceleration to user
+   * ~~Apply velocity and acceleration to user~~
    * Play tests (private beta (public repo lol) Sam, RJ, Pete, Dave)
  * ~~Move the clock into the game.~~
    * ~~If we are in the start state or gameOver state, the clock isn't running~~

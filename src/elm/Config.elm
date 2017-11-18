@@ -24,3 +24,8 @@ playerStartingSize =
 npcStartingSize : Float
 npcStartingSize =
     4
+
+
+maxNpcVelocity : Float
+maxNpcVelocity =
+    3
