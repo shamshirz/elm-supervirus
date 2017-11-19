@@ -17,7 +17,11 @@ Makin' gaimz.
  * View is displaying model!
 
 
-### Next up
+## Planning
+
+### Phase 1
+Playable.
+#### Complete
  * ~~Replace favicon & only page~~
  * ~~Collision detection~~
  * ~~Boundaries~~
@@ -29,12 +33,22 @@ Makin' gaimz.
    * ~~Enemy random velocity on spawn~~
    * ~~Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)~~
  * ~~Automated Enemy Spawning~~
- * Improve pacing (user is really slow)
-   * ~~Apply velocity and acceleration to user~~
-   * Play tests (private beta (public repo lol) Sam, RJ, Pete, Dave)
+ * ~~Apply velocity and acceleration to user~~
  * ~~Move the clock into the game.~~
    * ~~If we are in the start state or gameOver state, the clock isn't running~~
    * ~~Subscriptions only apply during Playing state~~
+
+#### On Deck
+ * Improve pacing (user is really slow)
+ * Implement Slide with running velocity (tangent projection)
+ * Play tests (private beta (public repo lol) Sam, RJ, Pete, Dave)
+ * Retro
+
+### Phase 2
+Enjoyable or server implementation
+#### Complete
+ *
+#### On Deck
  * Allow pause
  * Apply delta to movement, instead of just tick size 1
  * Streamline speed / size / display (UI work)
@@ -54,6 +68,7 @@ Makin' gaimz.
    * (NTH) websocket (hotreloading leaderboard on the side of the game!!!)
    * (NTH) Absinthe
    * (NTH) Leaderboard
+   * (NTH) Checkout [Guardian](https://github.com/ueberauth/guardian)
  * Music
  * Sound effects
  * Release
@@ -61,7 +76,8 @@ Makin' gaimz.
  * Gromit!
 
 
-### DreamTime
+### Phase 3
+DreamTime.
 
 * Different types of virus
   * styles and powers

@@ -28,4 +28,4 @@ npcStartingSize =
 
 maxNpcVelocity : Float
 maxNpcVelocity =
-    3
+    2
