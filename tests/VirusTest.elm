@@ -16,6 +16,16 @@ testingBoundary =
     40
 
 
+northEast : Vec2.Vec2
+northEast =
+    Vec2.vec2 1 1
+
+
+origin : Vec2.Vec2
+origin =
+    Vec2.vec2 0 0
+
+
 suite : Test
 suite =
     describe "The Virus module"
@@ -25,39 +35,63 @@ suite =
                 \_ ->
                     let
                         targetPosition =
-                            ( -2, 3 )
+                            ( 1, 1 )
 
                         virus =
-                            player testingBoundary
-                                |> move targetPosition testingBoundary
+                            Virus.safeCreate testingBoundary origin 2 northEast
+
+                        afterMove =
+                            Virus.move testingBoundary Bounce virus
                     in
-                        Expect.equal (location virus) targetPosition
+                        Expect.equal (location afterMove) targetPosition
             , test "updates the location relative to current position" <|
                 \_ ->
                     let
-                        movementVector =
-                            ( 1, 3 )
+                        targetPosition =
+                            ( 2, 2 )
 
                         virus =
-                            player testingBoundary
-                                |> move movementVector testingBoundary
-                                |> move movementVector testingBoundary
-                                |> move movementVector testingBoundary
+                            Virus.safeCreate testingBoundary origin 2 northEast
+
+                        afterMove =
+                            virus
+                                |> Virus.move testingBoundary Bounce
+                                |> Virus.move testingBoundary Bounce
                     in
-                        Expect.equal (location virus) ( 3, 9 )
+                        Expect.equal (location afterMove) targetPosition
             ]
-        , describe "Virus.handleCollision"
+        , fuzz2 (Fuzz.floatRange -2 2) (Fuzz.floatRange -2 2) "FUZZ: random velocity always keeps us within the boundary" <|
+            \float1 float2 ->
+                let
+                    -- This fails if we are moving fast enough to not land in the boundary after the bounce
+                    randomVelocity =
+                        Vec2.vec2 float1 float2
+
+                    virus =
+                        Virus.safeCreate testingBoundary origin 2 randomVelocity
+
+                    move =
+                        Virus.move testingBoundary Bounce
+
+                    repeat =
+                        List.repeat 100 1
+                in
+                    repeat
+                        |> List.foldl (\_ virus -> move virus) virus
+                        |> (.location >> Vec2.length)
+                        |> Expect.within (Relative 100.0001) 0
+        , describe "Virus.resolveBattles"
             [ test "player dies if collides with bigger virus" <|
                 \_ ->
                     let
                         player =
-                            Alive <| newVirus 5 ( 0, 0 ) testingBoundary
+                            Virus.safeCreate testingBoundary origin 2 northEast
 
-                        biggerNpc =
-                            makeNpc testingBoundary 10 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
+                        biggerVirus =
+                            Virus.safeCreate testingBoundary origin 4 northEast
                     in
-                        case handleCollision biggerNpc player of
-                            Dead ->
+                        case Virus.resolveBattles player [ biggerVirus ] of
+                            ( Dead, _ ) ->
                                 Expect.pass
 
                             _ ->
@@ -66,54 +100,35 @@ suite =
                 \_ ->
                     let
                         player =
-                            Alive <| newVirus 5 ( 0, 0 ) testingBoundary
+                            Virus.safeCreate testingBoundary origin 2 northEast
 
-                        smallerNpc =
-                            makeNpc testingBoundary 2 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
+                        smallerVirus =
+                            Virus.safeCreate testingBoundary origin 1 northEast
                     in
-                        case handleCollision smallerNpc player of
-                            Dead ->
+                        case Virus.resolveBattles player [ smallerVirus ] of
+                            ( Dead, _ ) ->
                                 Expect.fail "We should have lived, but didn't!"
 
-                            Alive virus ->
-                                Expect.equal virus.size 5.2
+                            ( Alive virus, _ ) ->
+                                Expect.equal virus.size 2.1
             , test "A dead virus can't come back to life" <|
                 \_ ->
                     let
                         player =
-                            Dead
+                            Virus.safeCreate testingBoundary origin 2 northEast
 
-                        smallerNpc =
-                            makeNpc testingBoundary 2 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
+                        biggerVirus =
+                            Virus.safeCreate testingBoundary origin 4 northEast
+
+                        smallerVirus =
+                            Virus.safeCreate testingBoundary origin 1 northEast
                     in
-                        case handleCollision smallerNpc player of
-                            Dead ->
+                        case Virus.resolveBattles player [ biggerVirus, smallerVirus, smallerVirus ] of
+                            ( Dead, _ ) ->
                                 Expect.pass
 
-                            Alive virus ->
-                                Expect.fail "We can't come back to life!"
-            ]
-        , describe "Virus.handleCollisions"
-            -- Nest descriptions!
-            [ test "handles multiple collisions" <|
-                \_ ->
-                    let
-                        player =
-                            newVirus 5 ( 0, 0 ) testingBoundary
-
-                        smallerNpc =
-                            makeNpc testingBoundary 2 (Vec2.vec2 0 0) (Vec2.vec2 0 0)
-
-                        threeOfThem =
-                            [ smallerNpc, smallerNpc, smallerNpc ]
-                    in
-                        case handleCollisions player threeOfThem of
-                            ( Dead, _ ) ->
-                                Expect.fail "we should have survived the onslaught!"
-
-                            ( Alive virus, _ ) ->
-                                virus.size
-                                    |> Expect.within (Relative 0.0001) 5.6
+                            _ ->
+                                Expect.fail "We should have died, but didn't!"
             ]
         , describe "Virus.newVirus"
             [ fuzz3 Fuzz.float Fuzz.float Fuzz.float "a new virus will always start in the play area" <|
@@ -123,7 +138,7 @@ suite =
                             abs fl1
 
                         virus =
-                            Virus.newVirus positiveRandom ( fl2, fl3 ) (positiveRandom * 2)
+                            Virus.safeCreate (positiveRandom * 2) (Vec2.vec2 fl2 fl3) positiveRandom northEast
 
                         position =
                             location virus

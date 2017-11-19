@@ -2,13 +2,13 @@ module MathTest exposing (..)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
-import DomainMath
+import Virus.Math2D as Math
 import Math.Vector2 as Vector2
 
 
 suite : Test
 suite =
-    describe "DomainMath module"
+    describe "Math module"
         [ describe "updatePositionAndVelocity"
             [ test "We return the right position without a collision" <|
                 \_ ->
@@ -26,7 +26,7 @@ suite =
                             5
 
                         ( newPos, newVel ) =
-                            DomainMath.updatePositionAndVelocity pointA velocity radius
+                            Math.updatePositionAndVelocity pointA velocity radius
                     in
                         Expect.equal newPos (Vector2.vec2 2 2)
             , test "We return the right velocity without a collision" <|
@@ -45,7 +45,7 @@ suite =
                             5
 
                         ( newPos, newVel ) =
-                            DomainMath.updatePositionAndVelocity pointA velocity radius
+                            Math.updatePositionAndVelocity pointA velocity radius
                     in
                         Expect.equal newVel velocity
             , test "We return the right position WITH a collision" <|
@@ -64,7 +64,7 @@ suite =
                             2
 
                         ( newPos, newVel ) =
-                            DomainMath.updatePositionAndVelocity pointA velocity radius
+                            Math.updatePositionAndVelocity pointA velocity radius
                     in
                         Expect.equal newPos pointA
             , test "We return the right velocity WITH a collision" <|
@@ -83,8 +83,25 @@ suite =
                             2
 
                         ( newPos, newVel ) =
-                            DomainMath.updatePositionAndVelocity pointA velocity radius
+                            Math.updatePositionAndVelocity pointA velocity radius
                     in
                         Expect.equal newVel (Vector2.vec2 -3 -3)
             ]
+        , test "We can handle zero velocity" <|
+            \_ ->
+                let
+                    origin =
+                        Vector2.vec2 0 0
+
+                    velocity =
+                        Vector2.vec2 0 7.6000364156427604
+
+                    ( newPos, newVel ) =
+                        Math.updatePositionAndVelocity origin velocity 5
+
+                    ( x, y ) =
+                        Vector2.toTuple newPos
+                in
+                    y
+                        |> Expect.within (Expect.Relative 5.0001) 0
         ]

@@ -143,9 +143,9 @@ safeSlope (Velocity vec) =
             Vector2.toTuple vec
     in
         if run == 0 && rise > 0 then
-            maxAbsValue
+            maxSlope
         else if run == 0 && rise < 0 then
-            negSmallestNormal
+            minSlope
         else
             rise / run
 
@@ -298,15 +298,13 @@ unwrap ( Position pos, Velocity vel ) =
 
 {-| Smallest absolute value representable in a 64 bit float.
 -}
-negSmallestNormal : Float
-negSmallestNormal =
-    -1 * (2.0 ^ 1022)
+minSlope : Float
+minSlope =
+    -1 * maxSlope
 
 
 {-| Largest finite absolute value representable in a 64 bit float.
 -}
-maxAbsValue : Float
-maxAbsValue =
-    2.0
-        - (2.0 ^ -52)
-        |> (*) (2.0 ^ 1023)
+maxSlope : Float
+maxSlope =
+    2.0 ^ 100
