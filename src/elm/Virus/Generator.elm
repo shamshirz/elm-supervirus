@@ -36,7 +36,7 @@ one { boundaryRadius, currentPosition, size, maxVelocity } typeConstructor =
 
 relativeSize : Float -> Generator Float
 relativeSize x =
-    Random.float (x * 0.7) (x * 1.7)
+    Random.float (x * 0.7) (x * 1.3)
 
 
 
@@ -59,7 +59,7 @@ location boundaryRadius currentPosition =
 
 locationRelativeToOrigin : Float -> Generator Vec2
 locationRelativeToOrigin boundaryRadius =
-    Random.pair (Random.float 30 boundaryRadius) (Random.float 0 360)
+    Random.pair (Random.float 50 boundaryRadius) (Random.float 0 360)
         |> Random.map (fromPolar >> Vector2.fromTuple)
 
 

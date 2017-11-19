@@ -40,13 +40,6 @@ safeCreate boundaryRadius location size velocity =
     Virus (Math2D.scaleWithinBoundary boundaryRadius size location) size velocity
 
 
-{-| Context free, not exposing constructors
--}
-newVirus : Vec2 -> Float -> Vec2 -> Virus
-newVirus =
-    Virus
-
-
 
 -- >>>>>>>>>>>>>>>>>>>>>> GETTERS
 
@@ -66,7 +59,7 @@ applyAcceleration delta { location, size, velocity } =
         |> Vector2.fromTuple
         |> Vector2.add velocity
         |> limitVelocity
-        |> newVirus location size
+        |> Virus location size
 
 
 limitVelocity : Vec2 -> Vec2
@@ -80,10 +73,10 @@ limitVelocity vel =
 
 limit : Float -> Float
 limit x =
-    if x > 4 then
-        4
-    else if x < -4 then
-        -4
+    if x > 3 then
+        3
+    else if x < -3 then
+        -3
     else
         x
 
@@ -121,11 +114,11 @@ moveWithBounce boundaryRadius { velocity, size, location } =
         ( newLoc, newVel ) =
             Math2D.updatePositionAndVelocity location velocity (boundaryRadius - size)
     in
-        newVirus newLoc size newVel
+        Virus newLoc size newVel
 
 
 {-| negate all velocity toward boundary
-TODO implement me!
+Project onto the tangent to the circle.
 -}
 moveWithSlide : Float -> Virus -> Virus
 moveWithSlide boundaryRadius virus =
@@ -143,7 +136,7 @@ moveAndScale boundaryRadius { location, size, velocity } =
                 |> Vector2.add velocity
                 |> Math2D.scaleWithinBoundary boundaryRadius size
     in
-        newVirus newLocation size velocity
+        Virus newLocation size velocity
 
 
 
@@ -193,7 +186,7 @@ battle enemy mortalPlayer =
 
 eat : Virus -> Virus -> Mortal Virus
 eat enemy { location, size, velocity } =
-    Alive <| newVirus location (size + transferableEnergy (enemy)) velocity
+    Alive <| Virus location (size + transferableEnergy (enemy)) velocity
 
 
 {-| Radius increase for a kill
