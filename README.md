@@ -37,10 +37,12 @@ Playable.
  * ~~Move the clock into the game.~~
    * ~~If we are in the start state or gameOver state, the clock isn't running~~
    * ~~Subscriptions only apply during Playing state~~
+ * ~~Implement Slide with running velocity (tangent projection)~~
 
 #### On Deck
- * Improve pacing (user is really slow)
- * Implement Slide with running velocity (tangent projection)
+ * Improve pacing (user is WAY TOO FAST)
+ * Remove redundant BoundaryConflict type
+ * General Math2D tidyness
  * Play tests (private beta (public repo lol) Sam, RJ, Pete, Dave)
  * Retro
 

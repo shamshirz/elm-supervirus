@@ -65,8 +65,12 @@ suite =
 
                         ( newPos, newVel ) =
                             Math.updatePositionAndVelocity pointA velocity radius
+
+                        ( x, y ) =
+                            Vector2.toTuple newPos
                     in
-                        Expect.equal newPos pointA
+                        x
+                            |> Expect.within (Expect.Relative 0.01) 1
             , test "We return the right velocity WITH a collision" <|
                 \_ ->
                     let
@@ -104,4 +108,21 @@ suite =
                 in
                     y
                         |> Expect.within (Expect.Relative 5.0001) 0
+        , test "velocity at boundary" <|
+            \_ ->
+                let
+                    atBoundary =
+                        Vector2.vec2 0 -5
+
+                    velocity =
+                        Vector2.vec2 1 0
+
+                    ( newPos, newVel ) =
+                        Math.updatePositionAndVelocity atBoundary velocity 5
+
+                    ( x, y ) =
+                        Vector2.toTuple newPos
+                in
+                    y
+                        |> Expect.greaterThan -5
         ]

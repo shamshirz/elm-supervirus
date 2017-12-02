@@ -1,6 +1,7 @@
 module Virus.Math2D
     exposing
-        ( updatePositionAndVelocity
+        ( moveWithBounce
+        , moveWithSlide
         , scaleWithinBoundary
         )
 
@@ -46,16 +47,47 @@ If we aren't outside the boundary, the just return that new point
 and the current velocity.
 
 -}
-updatePositionAndVelocity : Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
-updatePositionAndVelocity point velocity radius =
+moveWithBounce : Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
+moveWithBounce point velocity radius =
+    InMotion velocity (Position point) (Velocity velocity)
+        |> move Bounce radius
+        |> unwrap
+
+
+moveWithSlide : Vec2 -> Vec2 -> Float -> ( Vec2, Vec2 )
+moveWithSlide point velocity radius =
+    InMotion velocity (Position point) (Velocity velocity)
+        |> move Slide radius
+        |> unwrap
+
+
+type BoundaryResponse
+    = Bounce
+    | Slide
+
+
+
+-- Internal function will take
+-- 1. boundary radius
+-- 2. Start Point
+-- 3. Velocity
+-- 4. movementVector
+-- 5. Collision Type
+-- We can call this recursively to handle multiple bounces in a single turn
+
+
+move : BoundaryResponse -> Float -> InMotion -> ( Position, Velocity )
+move responseType boundaryRadius ({ momentum, velocity, position } as currentMotion) =
     let
-        (Position next) =
-            naiveNextPosition (Position point) (Velocity velocity)
+        naiveNext =
+            naiveNextPosition position momentum
     in
-        if isOutsideRadius radius (Position next) then
-            unwrap <| handleCollision (Position point) (Position next) (Velocity velocity) radius
+        if isOutsideRadius boundaryRadius naiveNext then
+            currentMotion
+                |> handleCollision responseType boundaryRadius naiveNext
+                |> toTuple
         else
-            ( next, velocity )
+            ( naiveNext, velocity )
 
 
 {-| This function will take a location vector, try to determine it's direction,
@@ -74,7 +106,7 @@ scaleWithinBoundary boundary size position =
         if isOutsideRadius boundaryMinusSize (Position position) then
             position
                 |> Vector2.normalize
-                |> Vector2.scale (boundaryMinusSize)
+                |> Vector2.scale (boundaryMinusSize - 0.0001)
         else
             position
 
@@ -83,8 +115,26 @@ scaleWithinBoundary boundary size position =
 -- Internal types to help make sense of functions / add some safety
 
 
+{-| Start position, original velocity, remaining current movement
+-}
+type alias InMotion =
+    { momentum : Vec2
+    , position : Position
+    , velocity : Velocity
+    }
+
+
+toTuple : InMotion -> ( Position, Velocity )
+toTuple { momentum, position, velocity } =
+    ( position, velocity )
+
+
 type Position
     = Position Vec2
+
+
+type Velocity
+    = Velocity Vec2
 
 
 position : ( Float, Float ) -> Position
@@ -92,13 +142,19 @@ position ( x, y ) =
     Position <| Vector2.vec2 x y
 
 
-type Velocity
-    = Velocity Vec2
-
-
 velocity : ( Float, Float ) -> Velocity
 velocity ( x, y ) =
     Velocity <| Vector2.vec2 x y
+
+
+handleCollision : BoundaryResponse -> Float -> Position -> InMotion -> InMotion
+handleCollision response =
+    case response of
+        Bounce ->
+            bounce
+
+        Slide ->
+            slide
 
 
 {-| Math for orthogonal projection of next point and velocity
@@ -108,29 +164,70 @@ velocity ( x, y ) =
 3.  Vector rejection (Orthogonal projection) that across line pointing towards origin
 4.  Vector rejection of velocity across that line too
 
+Return the (collision, projected Vel, projected remaining movement)
+
 -}
-handleCollision : Position -> Position -> Velocity -> Float -> ( Position, Velocity )
-handleCollision (Position insidePoint) (Position outsidePoint) (Velocity velocity) radius =
+bounce : Float -> Position -> InMotion -> InMotion
+bounce boundaryRadius (Position outsidePoint) { momentum, velocity, position } =
+    case collisionPoint boundaryRadius position (Position outsidePoint) of
+        Just (Position col) ->
+            let
+                intersection =
+                    col
+                        |> Vector2.normalize
+                        |> Vector2.scale (boundaryRadius - 0.001)
+
+                vectorOutside =
+                    Vector2.sub outsidePoint intersection
+
+                collisionToOriginUnitVecor =
+                    Vector2.direction origin intersection
+
+                (Velocity reflectedOutsideVector) =
+                    rejectOn collisionToOriginUnitVecor (Velocity vectorOutside)
+
+                newPosition =
+                    intersection
+                        |> Vector2.add reflectedOutsideVector
+                        |> Position
+
+                reflectedVelocity =
+                    rejectOn collisionToOriginUnitVecor velocity
+            in
+                InMotion (Vector2.vec2 0 0) newPosition reflectedVelocity
+
+        Nothing ->
+            let
+                _ =
+                    Debug.crash "Disaster strikes! No intersection with circle! Redirecting towards circle"
+            in
+                InMotion (Vector2.direction origin outsidePoint) position velocity
+
+
+slide : Float -> Position -> InMotion -> InMotion
+slide boundaryRadius (Position outsidePoint) { momentum, position, velocity } =
     let
-        (Position intersection) =
-            collisionPoint (Position insidePoint) (Position outsidePoint) radius
-
-        vectorOutside =
-            Vector2.sub outsidePoint intersection
-
-        collisionToOriginUnitVecor =
-            Vector2.direction origin intersection
-
-        reflectedOusideVector =
-            reflect vectorOutside collisionToOriginUnitVecor
-
-        reflectedVelocity =
-            reflect velocity collisionToOriginUnitVecor
-
         newPosition =
-            Vector2.add intersection reflectedOusideVector
+            outsidePoint
+                |> scaleWithinBoundary boundaryRadius 0
+                |> Position
+                |> Debug.log "New Position: "
+
+        (Velocity vel) =
+            velocity
+
+        tangentLine =
+            tangentTowards newPosition (Position (Vector2.add outsidePoint vel))
+
+        --         |> Velocity
+        -- velDir =
+        --     Vector2.dir
+        projectedVelocity =
+            velocity
+                |> projectOn tangentLine
+                |> Debug.log "Projected Velocity: "
     in
-        ( Position newPosition, Velocity reflectedVelocity )
+        InMotion (Vector2.vec2 0 0) newPosition projectedVelocity
 
 
 {-| Rise over run, and we stay safe from NaN
@@ -170,24 +267,43 @@ slopeIntercept (Position pointA) (Position pointB) =
         ( m, b )
 
 
-collisionPoint : Position -> Position -> Float -> Position
-collisionPoint insidePoint outsidePoint radius =
+{-| Find the intersection points between a line and a circle.
+It's possible there is only 1 (if we intersect at a tangent)
+It's possible there are none (Just totally different place)
+This will return the intersection point closest to the second point on the line
+Or Nothing if the case of no intersection.
+-}
+collisionPoint : Float -> Position -> Position -> Maybe Position
+collisionPoint radius insidePoint outsidePoint =
     outsidePoint
         |> slopeIntercept insidePoint
         |> intersectionWithCircle radius
         |> closerPointTo outsidePoint
+        |> dropNanOrInfinity
+
+
+dropNanOrInfinity : Position -> Maybe Position
+dropNanOrInfinity ((Position vec) as pos) =
+    let
+        x =
+            Vector2.getX vec
+    in
+        if isNaN x || isInfinite x then
+            Nothing
+        else
+            Just pos
 
 
 closerPointTo : Position -> ( Position, Position ) -> Position
 closerPointTo (Position start) ( Position a, Position b ) =
     let
-        distanceSqAT =
-            Vector2.distanceSquared start a
+        distanceSqAToStart =
+            Vector2.distance start a
 
-        distanceSqBT =
-            Vector2.distanceSquared start b
+        distanceSqBToStart =
+            Vector2.distance start b
     in
-        if distanceSqAT <= distanceSqBT then
+        if distanceSqAToStart <= distanceSqBToStart then
             Position a
         else
             Position b
@@ -252,16 +368,58 @@ This always works. Real math, just vectors being vectors
 Worst case scenario we are perpendicular and the rejection is itself
 
 -}
-reflect : Vec2 -> Vec2 -> Vec2
-reflect vector normal =
+rejectOn : Vec2 -> Velocity -> Velocity
+rejectOn onto (Velocity projecting) =
     let
         aDotN =
-            Vector2.dot vector normal
+            Vector2.dot projecting onto
 
         rhs =
-            Vector2.scale (2 * aDotN) normal
+            Vector2.scale (2 * aDotN) onto
     in
-        Vector2.sub vector rhs
+        Velocity <| Vector2.sub projecting rhs
+
+
+{-| projecting (a) onto normalized vector (b)
+scale a to : aDotb over (length of a)^2
+-}
+projectOn : Vec2 -> Velocity -> Velocity
+projectOn onto (Velocity projecting) =
+    let
+        normalB =
+            Vector2.normalize onto
+
+        dot =
+            Vector2.dot projecting normalB
+                |> Debug.log "DotProduct: "
+
+        magSquared =
+            (Vector2.length normalB) ^ 2
+
+        -- |> Debug.log "MagSqrd: "
+    in
+        if magSquared == 0 then
+            Velocity (Vector2.vec2 0 0)
+        else
+            Velocity <| Vector2.scale (dot / magSquared) normalB
+
+
+{-| Assuming on the edge of a circle at (0,0)
+-}
+tangentTowards : Position -> Position -> Vec2
+tangentTowards (Position pos) target =
+    let
+        ( a, b ) =
+            pos
+                |> Vector2.direction origin
+                |> Vector2.toTuple
+                |> (\( x, y ) -> ( ( -1 * y, x ), ( y, -1 * x ) ))
+
+        (Position closerToX) =
+            ( Position <| Vector2.fromTuple a, Position <| Vector2.fromTuple b )
+                |> closerPointTo target
+    in
+        closerToX
 
 
 
@@ -277,9 +435,9 @@ isOutsideRadius radius (Position point) =
     Vector2.length point > radius
 
 
-naiveNextPosition : Position -> Velocity -> Position
-naiveNextPosition (Position point) (Velocity velocity) =
-    Position <| Vector2.add point velocity
+naiveNextPosition : Position -> Vec2 -> Position
+naiveNextPosition (Position point) movementVector =
+    Position <| Vector2.add point movementVector
 
 
 origin : Vec2

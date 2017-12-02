@@ -89,21 +89,17 @@ limit x =
 
 type BoundaryConflict
     = Bounce
-    | Negate
-    | Scale
+    | Slide
 
 
-move : Float -> BoundaryConflict -> Virus -> Virus
-move boundaryRadius onConflict mover =
+move : BoundaryConflict -> Float -> Virus -> Virus
+move onConflict boundaryRadius mover =
     case onConflict of
         Bounce ->
             moveWithBounce boundaryRadius mover
 
-        Negate ->
+        Slide ->
             moveWithSlide boundaryRadius mover
-
-        Scale ->
-            moveAndScale boundaryRadius mover
 
 
 {-| Bounce off of interior of boundary
@@ -112,7 +108,7 @@ moveWithBounce : Float -> Virus -> Virus
 moveWithBounce boundaryRadius { velocity, size, location } =
     let
         ( newLoc, newVel ) =
-            Math2D.updatePositionAndVelocity location velocity (boundaryRadius - size)
+            Math2D.moveWithBounce location velocity (boundaryRadius - size)
     in
         Virus newLoc size newVel
 
@@ -121,8 +117,12 @@ moveWithBounce boundaryRadius { velocity, size, location } =
 Project onto the tangent to the circle.
 -}
 moveWithSlide : Float -> Virus -> Virus
-moveWithSlide boundaryRadius virus =
-    virus
+moveWithSlide boundaryRadius { velocity, size, location } =
+    let
+        ( newLoc, newVel ) =
+            Math2D.moveWithSlide location velocity (boundaryRadius - size)
+    in
+        Virus newLoc size newVel
 
 
 {-| move, and if outside the boundary
