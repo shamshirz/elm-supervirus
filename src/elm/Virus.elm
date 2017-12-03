@@ -17,6 +17,7 @@ import Virus.Generator as Gen
 import Virus.Math2D as Math2D
 import Math.Vector2 as Vector2 exposing (Vec2)
 import Random
+import Config exposing (maxVelocity, dragPercentage)
 
 
 type alias Virus =
@@ -59,7 +60,17 @@ applyAcceleration delta { location, size, velocity } =
         |> Vector2.fromTuple
         |> Vector2.add velocity
         |> limitVelocity
+        |> applyDrag
         |> Virus location size
+
+
+{-| scale velocity down proportionally to the amount of drag
+…or should drag be a constant? no proportional
+-}
+applyDrag : Vec2 -> Vec2
+applyDrag vel =
+    vel
+        |> Vector2.scale (1 - dragPercentage)
 
 
 limitVelocity : Vec2 -> Vec2
@@ -73,10 +84,10 @@ limitVelocity vel =
 
 limit : Float -> Float
 limit x =
-    if x > 3 then
-        3
-    else if x < -3 then
-        -3
+    if x > maxVelocity then
+        maxVelocity
+    else if x < (-1 * maxVelocity) then
+        -1 * maxVelocity
     else
         x
 

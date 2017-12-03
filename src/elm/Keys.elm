@@ -11,6 +11,7 @@ module Keys
 
 import Char exposing (fromCode, KeyCode)
 import EveryDict exposing (EveryDict)
+import Config exposing (acceleration)
 
 
 --  I'm not really using the 'value' in this dict, key existance is kind of all that matters rn
@@ -80,13 +81,13 @@ foldKey : GameKey -> ( Float, Float ) -> ( Float, Float )
 foldKey key ( x, y ) =
     case key of
         Down ->
-            ( x, y - 1 )
+            ( x, y - acceleration )
 
         Left ->
-            ( x - 1, y )
+            ( x - acceleration, y )
 
         Right ->
-            ( x + 1, y )
+            ( x + acceleration, y )
 
         Up ->
-            ( x, y + 1 )
+            ( x, y + acceleration )
