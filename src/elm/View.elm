@@ -17,12 +17,14 @@ view { game } =
             div []
                 [ text <| "Game over, your score was : " ++ (toString score)
                 , div [] [ Html.button [ onClick StartGame ] [ text "Restart" ] ]
+                , footer
                 ]
 
         Lobby ->
             div []
                 [ text "Welcome to 2uperVirus!"
                 , div [] [ Html.button [ onClick StartGame ] [ text "Start" ] ]
+                , footer
                 ]
 
         Playing _ _ culture ->
@@ -87,3 +89,14 @@ drawVirus color virus =
         Collage.circle virus.size
             |> Collage.filled color
             |> Collage.move ( x, y )
+
+
+footer : Html a
+footer =
+    div []
+        [ br [] []
+        , text "please send me your thoughts. This is the first pass and anything goes! Be as upfront as possible."
+        , br [] []
+        , br [] []
+        , text "sylverstudiosdev@gmail.com"
+        ]
