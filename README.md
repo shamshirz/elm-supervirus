@@ -53,6 +53,9 @@ Enjoyable or server implementation
  *
 #### On Deck
  * Allow pause
+ * Add google analytics
+ * Menu cleanliness (general layout)
+ * New favicon
  * Add netlify webhook to github (unprioritized)
  * Apply delta to movement, instead of just tick size 1
  * Streamline speed / size / display (UI work)
