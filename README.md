@@ -38,12 +38,13 @@ Playable.
    * ~~If we are in the start state or gameOver state, the clock isn't running~~
    * ~~Subscriptions only apply during Playing state~~
  * ~~Implement Slide with running velocity (tangent projection)~~
+ * ~~Improve pacing (user is WAY TOO FAST)~~
+ * ~~Deploy with netlify!~~
 
 #### On Deck
- * Improve pacing (user is WAY TOO FAST)
+ * Play tests (private beta (add email address) Sam, RJ, Pete, Dave)
  * Remove redundant BoundaryConflict type
  * General Math2D tidyness
- * Play tests (private beta (public repo lol) Sam, RJ, Pete, Dave)
  * Retro
 
 ### Phase 2
@@ -52,6 +53,7 @@ Enjoyable or server implementation
  *
 #### On Deck
  * Allow pause
+ * Add netlify webhook to github (unprioritized)
  * Apply delta to movement, instead of just tick size 1
  * Streamline speed / size / display (UI work)
    * Improve Images (specifically enemy overlap)
