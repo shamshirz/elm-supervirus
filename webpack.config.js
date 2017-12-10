@@ -45,10 +45,15 @@ const elmLoader = (isProd) => {
     return {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        use: [{
-            loader: 'elm-webpack-loader',
-            options: isProd ? {} : { verbose: true, warn: true, debug: true }
-        }]
+        loader: 'elm-webpack-loader',
+        options: {
+            verbose: true,
+            warn: true,
+            files: [
+                path.resolve(__dirname, "src/elm/Main.elm"),
+                path.resolve(__dirname, "src/elm/Form.elm")
+            ]
+        }
     }
 }
 
