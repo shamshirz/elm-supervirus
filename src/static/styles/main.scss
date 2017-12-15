@@ -1,34 +1,35 @@
-.flex-column-center {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
+html {
+  height: 100%;
 }
 
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 header {
-  background: #41ade5;
+  background-color: #41ade5;
   color: #fff;
   clip-path: polygon(
     0 0,
-    100% 0,
-    100% calc(100% - 6rem),
+    90% 0,
     0 100%
   );
 }
 
 .header {
   margin-left: 20rem;
-  padding-top: 5rem;
-  padding-bottom: 5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 #main {
   display: flex;
+  flex-grow: 1;
   justify-content: center;
-  margin-bottom: 10rem;
+  margin-bottom: 2rem;
 }
 
 .name-email {
@@ -49,14 +50,49 @@ header {
   display: none;
 }
 
+
+// FOOTER & FORM STUFF
 .footer {
-  background: #41ade5;
   color: #fff;
+  background-color: #41ade5;
+  display: flex;
+  justify-content: space-between;
+}
+
+.left-accent {
+  background-color: rgb(94, 233, 59);
+  flex-grow: 1;
   clip-path: polygon(
-    0 0,
-    100% calc(100% - 2rem),
+    0 40%,
+    0 100%,
+    100% 100%
+  );
+}
+.center {
+  flex-grow: 2;
+  margin-bottom: 3rem;
+}
+.right-accent {
+  background-color: rgb(94, 233, 59);
+  flex-grow: 1;
+  clip-path: polygon(
+    100% 40%,
     100% 100%,
     0 100%
   );
-  padding-top: 5rem;
+}
+
+.feedback-form {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+textarea {
+  resize: none;
+  flex: 1;
+  height: 3rem;
 }
