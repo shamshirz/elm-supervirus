@@ -29,21 +29,8 @@ subscriptions _ =
 
 type alias Model =
     { feedback : String
-    , formName : String
     , submitRequest : WebData String
     }
-
-
-formToUrl : Model -> String
-formToUrl { feedback, formName } =
-    "/?" ++ "form-name=" ++ Http.encodeUri formName ++ "&feedback=" ++ Http.encodeUri feedback
-
-
-postCmd : String -> Cmd Msg
-postCmd address =
-    Http.post address Http.emptyBody (Decode.field "data" Decode.string)
-        |> RemoteData.sendRequest
-        |> Cmd.map SubmitCompleted
 
 
 
@@ -53,7 +40,6 @@ postCmd address =
 init : ( Model, Cmd Msg )
 init =
     { feedback = ""
-    , formName = "feedback-form"
     , submitRequest = RemoteData.NotAsked
     }
         ! []
@@ -76,18 +62,40 @@ update msg model =
             { model | feedback = newFeedback } ! []
 
         SubmitFeedback ->
-            let
-                _ =
-                    Debug.log "Submit" model
-            in
-                model ! []
+            submit model
+
+        SubmitCompleted ((RemoteData.Success responseBody) as data) ->
+            { model | feedback = "", submitRequest = data } ! []
 
         SubmitCompleted data ->
-            let
-                _ =
-                    Debug.log "Response data" data
-            in
-                model ! []
+            { model | submitRequest = data } ! []
+
+
+submit : Model -> ( Model, Cmd Msg )
+submit ({ feedback } as model) =
+    if feedback == "" then
+        let
+            _ =
+                Debug.log "Submit: " "Not submitting, empty form"
+        in
+            model ! []
+    else
+        let
+            _ =
+                Debug.log "Submit: " feedback
+        in
+            { model | submitRequest = RemoteData.Loading } ! [ submitCmd feedback ]
+
+
+submitCmd : String -> Cmd Msg
+submitCmd formContent =
+    let
+        url =
+            "?form-name=formNameHere&feedback=" ++ Debug.log "Encode" (Http.encodeUri formContent)
+    in
+        Http.post url Http.emptyBody (Decode.field "data" Decode.string)
+            |> RemoteData.sendRequest
+            |> Cmd.map SubmitCompleted
 
 
 
@@ -105,12 +113,45 @@ view model =
 
 feedbackSection : String -> WebData a -> Html Msg
 feedbackSection text_ request =
-    Html.form [ class "feedback-form", onSubmit SubmitFeedback ]
-        [ textarea
-            [ id "textArea"
-            , onInput UpdateFeedback
-            , onBlur SubmitFeedback
-            , placeholder "Help me make this better, leave any thoughts here! (saves automatically)"
-            ]
-            [ text text_ ]
+    case request of
+        RemoteData.Loading ->
+            -- indicate that it's in flight
+            feedback Nothing text_
+
+        RemoteData.Failure reason ->
+            feedback (Just "Yikes, tell Aaron!") text_
+
+        RemoteData.Success _ ->
+            feedback Nothing text_
+
+        RemoteData.NotAsked ->
+            feedback Nothing text_
+
+
+feedback : Maybe String -> String -> Html Msg
+feedback mMessage formText =
+    let
+        children =
+            mMessage
+                |> Maybe.map (\message -> [ userInput formText, formMessage message ])
+                |> Maybe.withDefault [ userInput formText ]
+    in
+        Html.form [ class "feedback-form", onSubmit SubmitFeedback ]
+            children
+
+
+userInput : String -> Html Msg
+userInput text_ =
+    textarea
+        [ id "textArea"
+        , onInput UpdateFeedback
+        , onBlur SubmitFeedback
+        , placeholder "Help me make this better, leave any thoughts here! (saves automatically)"
         ]
+        [ text text_ ]
+
+
+formMessage : String -> Html Msg
+formMessage message =
+    div [ class "form-message" ]
+        [ text message ]
