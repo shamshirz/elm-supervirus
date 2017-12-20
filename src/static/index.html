@@ -15,19 +15,11 @@
 
     <div id="main"></div>
 
-    <!-- <form name="feedback-form" netlify-honeypot="mystery-field" netlify>
-      <p class="hidden">
-        <label>Don’t fill this out: <input name="mystery-field"></label>
-      </p>
-      <div class="name-email">
-          <label>Your Name: <input type="text" name="name"></label>
-          <label>Your Email: <input type="email" name="email"></label>
-      </div>
-      <div class="free-text">
-        <label>Message: <textarea name="message"></textarea></label>
-      </div>
-      <button type="submit">Send</button>
-    </form> -->
+    <!-- The hidden form, this lets netlify expect the ajax request (It can't read the JS rendered stuff) -->
+    <form name="feedback" netlify netlify-honeypot="age" hidden>
+      <input type="hidden" name="age" />
+      <input type="text" name="message" />
+    </form>
 
 
     <div id="footer"></div>

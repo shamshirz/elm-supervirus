@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onSubmit, onBlur)
 import RemoteData exposing (WebData)
 import Http
-import Json.Decode as Decode
 
 
 main : Program Never Model Msg
@@ -29,7 +28,7 @@ subscriptions _ =
 
 type alias Model =
     { feedback : String
-    , submitRequest : WebData String
+    , submitRequest : WebData ()
     }
 
 
@@ -51,7 +50,7 @@ init =
 
 type Msg
     = SubmitFeedback
-    | SubmitCompleted (WebData String)
+    | SubmitCompleted (WebData ())
     | UpdateFeedback String
 
 
@@ -64,7 +63,7 @@ update msg model =
         SubmitFeedback ->
             submit model
 
-        SubmitCompleted ((RemoteData.Success responseBody) as data) ->
+        SubmitCompleted ((RemoteData.Success _) as data) ->
             { model | feedback = "", submitRequest = data } ! []
 
         SubmitCompleted data ->
@@ -90,12 +89,27 @@ submit ({ feedback } as model) =
 submitCmd : String -> Cmd Msg
 submitCmd formContent =
     let
-        url =
-            "?form-name=formNameHere&feedback=" ++ Debug.log "Encode" (Http.encodeUri formContent)
+        body2 =
+            Http.stringBody "application/x-www-form-urlencoded" <|
+                "form-name=feedback&message="
+                    ++ toString (Http.encodeUri formContent)
     in
-        Http.post url Http.emptyBody (Decode.field "data" Decode.string)
+        formPost body2
             |> RemoteData.sendRequest
             |> Cmd.map SubmitCompleted
+
+
+formPost : Http.Body -> Http.Request ()
+formPost body =
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Content-Type" "application/x-www-form-urlencoded" ]
+        , url = "/"
+        , body = body
+        , expect = Http.expectStringResponse (\_ -> Ok ())
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
 
@@ -144,11 +158,13 @@ userInput : String -> Html Msg
 userInput text_ =
     textarea
         [ id "textArea"
+        , name "message"
         , onInput UpdateFeedback
         , onBlur SubmitFeedback
         , placeholder "Help me make this better, leave any thoughts here! (saves automatically)"
+        , value text_
         ]
-        [ text text_ ]
+        []
 
 
 formMessage : String -> Html Msg
