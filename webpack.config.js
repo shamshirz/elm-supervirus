@@ -49,6 +49,7 @@ const elmLoader = (isProd) => {
         options: {
             verbose: true,
             warn: true,
+            // debug: true,
             files: [
                 path.resolve(__dirname, "src/elm/Main.elm"),
                 path.resolve(__dirname, "src/elm/Form.elm")
