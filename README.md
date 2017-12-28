@@ -10,52 +10,72 @@ The original was having some keyboard issues, so this is intended to relieve tha
 
 Makin' gaimz.
 
-## Status Check!
+## Try it
 
-### Working stuff
- * `wsad` keys are sending messages!
- * View is displaying model!
+* Just once
+  * `npm install -g elm elm-format yarn`
+* Whenever you change a dependency
+  * `npm run prep`
+* When you're working
+  * `npm run start`
+* Tests (from Root)
+  * `elm-test`
+* Build a prod version (minified)
+  * `npm run deploy`
+
 
 
 ## Planning
 
-### Phase 1
-Playable.
-#### Complete
- * ~~Replace favicon & only page~~
- * ~~Collision detection~~
- * ~~Boundaries~~
- * ~~Scoring~~
- * ~~Smooth borders~~
- * ~~Enemy Movement~~
-   * ~~Enemy wall bounce~~
-   * ~~random in play~~
-   * ~~Enemy random velocity on spawn~~
-   * ~~Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)~~
- * ~~Automated Enemy Spawning~~
- * ~~Apply velocity and acceleration to user~~
- * ~~Move the clock into the game.~~
-   * ~~If we are in the start state or gameOver state, the clock isn't running~~
-   * ~~Subscriptions only apply during Playing state~~
- * ~~Implement Slide with running velocity (tangent projection)~~
- * ~~Improve pacing (user is WAY TOO FAST)~~
- * ~~Deploy with netlify!~~
+### ~~Phase 1: Playable~~
 
-#### On Deck
- * Play tests (private beta (add email address) Sam, RJ, Pete, Dave)
+  <details>
+
+  #### Complete
+  * ~~Replace favicon & only page~~
+  * ~~Collision detection~~
+  * ~~Boundaries~~
+  * ~~Scoring~~
+  * ~~Smooth borders~~
+  * ~~Enemy Movement~~
+    * ~~Enemy wall bounce~~
+    * ~~random in play~~
+    * ~~Enemy random velocity on spawn~~
+    * ~~Fuzzy test for enemy movement (within boundary, velocity stays at same abs val)~~
+  * ~~Automated Enemy Spawning~~
+  * ~~Apply velocity and acceleration to user~~
+  * ~~Move the clock into the game.~~
+    * ~~If we are in the start state or gameOver state, the clock isn't running~~
+    * ~~Subscriptions only apply during Playing state~~
+  * ~~Implement Slide with running velocity (tangent projection)~~
+  * ~~Improve pacing (user is WAY TOO FAST)~~
+  * ~~Deploy with netlify!~~
+  * ~~Play tests (private beta (add email address) Sam, RJ, Pete, Dave)~~
+
+  </details>
+
+
+### Phase 2: "Playtest"-able
+
+Prioritized
+ * Restart keybind - 1 hr
+ * Add google analytics - 1 hr
+ * Scoring (combo tracking) - 6hrs
+ * Scenes
+  * Lobby (controls & scoring) - 2hrs
+  * GameOver (stats n' restart) - 1 hr
+ * Layout
+  * AgStudios logo - 1 hr
+  * Github Link - 1 hr
+  * Favicon - 2 hrs
+  * Title - 2 hrs
+ * Win condition - 1 hr
+
+
+ Unpriotized
+ * Allow pause
  * Remove redundant BoundaryConflict type
  * General Math2D tidyness
- * Retro
-
-### Phase 2
-Enjoyable or server implementation
-#### Complete
- *
-#### On Deck
- * Allow pause
- * Add google analytics
- * Menu cleanliness (general layout)
- * New favicon
  * Add netlify webhook to github (unprioritized)
  * Apply delta to movement, instead of just tick size 1
  * Streamline speed / size / display (UI work)
@@ -64,12 +84,6 @@ Enjoyable or server implementation
    * Viewport?
    * (NTH) Battle scar concept
    * (NTH) Save the last play position and display it on the game over screen.
- * Win Condition (80% of volume?)
- * Improve scoring
- * Outside of game view
-   * Layout / spacing / design
-   * Supervirus2 -> 2uperVirus
-   * GameOver View
  * Serve it with Heroku
    * Elixir phoenix
    * (NTH) websocket (hotreloading leaderboard on the side of the game!!!)
@@ -82,6 +96,9 @@ Enjoyable or server implementation
  * ???
  * Gromit!
 
+ #### Complete
+ *
+
 
 ### Phase 3
 DreamTime.
@@ -91,16 +108,3 @@ DreamTime.
   * diffusion type
 * css transitions and/or animations outside of the game
 * Other keys can do other things
-
-## Do stuff
-
-* Just once
-  * `npm install -g elm elm-format yarn`
-* Whenever you change a dependency
-  * `npm run prep`
-* When you're working
-  * `npm run start`
-* Tests (from Root)
-  * `elm-test`
-* Build a prod version (minified)
-  * `npm run deploy`
