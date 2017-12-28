@@ -1051,9 +1051,9 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
-elm-webpack-loader@^4.3.0:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/elm-webpack-loader/-/elm-webpack-loader-4.3.1.tgz#3a53c3f9a73209206bf38b365a1b0b80a2b3d4ea"
+elm-webpack-loader@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/elm-webpack-loader/-/elm-webpack-loader-4.4.0.tgz#dd7a3b628b7abc4fac38e3045d3ab6e57187e9b6"
   dependencies:
     elm "^0.18.0"
     glob "^7.1.1"
