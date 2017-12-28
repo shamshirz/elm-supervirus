@@ -117,33 +117,24 @@ formPost body =
 
 
 view : Model -> Html Msg
-view model =
-    footer [ class "footer" ]
-        [ div [ class "left-accent" ] [ text "Left side" ]
-        , div [ class "center" ] [ feedbackSection model.feedback model.submitRequest ]
-        , div [ class "right-accent" ] [ text "Left side" ]
-        ]
-
-
-feedbackSection : String -> WebData a -> Html Msg
-feedbackSection text_ request =
-    case request of
+view { feedback, submitRequest } =
+    case submitRequest of
         RemoteData.Loading ->
             -- indicate that it's in flight
-            feedback Nothing text_
+            createForm Nothing feedback
 
         RemoteData.Failure reason ->
-            feedback (Just "Yikes, tell Aaron!") text_
+            createForm (Just "Yikes, tell Aaron!") feedback
 
         RemoteData.Success _ ->
-            feedback Nothing text_
+            createForm Nothing feedback
 
         RemoteData.NotAsked ->
-            feedback Nothing text_
+            createForm Nothing feedback
 
 
-feedback : Maybe String -> String -> Html Msg
-feedback mMessage formText =
+createForm : Maybe String -> String -> Html Msg
+createForm mMessage formText =
     let
         children =
             mMessage
