@@ -9,16 +9,6 @@ body {
   height: 100%;
 }
 
-header {
-  background-color: #41ade5;
-  color: #fff;
-  clip-path: polygon(
-    0 0,
-    90% 0,
-    0 100%
-  );
-}
-
 .header {
   margin-left: 20rem;
   padding-top: 1rem;
@@ -59,27 +49,15 @@ header {
   justify-content: space-between;
 }
 
-.left-accent {
-  background-color: rgb(94, 233, 59);
+.left-side {
   flex-grow: 1;
-  clip-path: polygon(
-    0 40%,
-    0 100%,
-    100% 100%
-  );
 }
 .center {
   flex-grow: 2;
   margin-bottom: 3rem;
 }
-.right-accent {
-  background-color: rgb(94, 233, 59);
+.right-side {
   flex-grow: 1;
-  clip-path: polygon(
-    100% 40%,
-    100% 100%,
-    0 100%
-  );
 }
 
 .feedback-form {
@@ -89,10 +67,61 @@ header {
   margin-bottom: 1rem;
   margin-left: 2rem;
   margin-right: 2rem;
+
+  textarea {
+    -webkit-border-radius: 2rem;
+    -moz-border-radius: 2rem;
+    border-radius: 2rem;
+    padding: 1rem;
+  }
 }
 
 textarea {
   resize: none;
   flex: 1;
   height: 3rem;
+}
+
+
+// Clip-path stuff
+
+.background__header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: -1;
+  background-color: #41ade5;
+  height: 20%;
+  clip-path: polygon(
+    0 0,
+    95% 0,
+    0 100%
+  );
+}
+
+.background__left {
+  position: absolute;
+  background-color: rgb(94, 233, 59);
+  top: 0;
+  width: 10%;
+  height: 100%;
+  clip-path: polygon(
+    0 60%,
+    100% 90%,
+    0 125%
+  );
+}
+
+.background__right {
+  position: absolute;
+  background-color: rgb(94, 233, 59);
+  top: 0;
+  right: 0;
+  width: 20%;
+  height: 100%;
+  clip-path: polygon(
+    100% 10%,
+    0 100%,
+    100% 100%
+  );
 }
