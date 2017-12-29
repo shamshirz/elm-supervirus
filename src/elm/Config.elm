@@ -1,4 +1,15 @@
-module Config exposing (..)
+module Config
+    exposing
+        ( acceleration
+        , boundaryRadius
+        , dragPercentage
+        , gameLoopPeriod
+        , maxNpcVelocity
+        , maxVelocity
+        , npcStartingSize
+        , playerStartingSize
+        , transferableEnergy
+        )
 
 import Time exposing (Time)
 
@@ -26,16 +37,6 @@ gameLoopPeriod =
     33 * Time.millisecond
 
 
-playerStartingSize : Float
-playerStartingSize =
-    5
-
-
-npcStartingSize : Float
-npcStartingSize =
-    4
-
-
 maxNpcVelocity : Float
 maxNpcVelocity =
     2
@@ -44,3 +45,18 @@ maxNpcVelocity =
 maxVelocity : Float
 maxVelocity =
     2.5
+
+
+npcStartingSize : Float
+npcStartingSize =
+    4
+
+
+playerStartingSize : Float
+playerStartingSize =
+    5
+
+
+transferableEnergy : Float
+transferableEnergy =
+    0.08
