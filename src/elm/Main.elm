@@ -39,7 +39,7 @@ subscriptions { game } =
                 ]
 
         _ ->
-            Sub.none
+            Sub.batch [ Keyboard.downs KeyDown ]
 
 
 
@@ -61,6 +61,9 @@ update msg model =
         End ->
             { model | game = M.endGame } ! []
 
+        KeyDown 32 ->
+            startGame model
+
         KeyDown keyNum ->
             handleKeyAction keyNum True model
 
@@ -71,13 +74,26 @@ update msg model =
             M.addNpc npc model ! []
 
         StartGame ->
-            { model | game = M.startGame } ! [ populateCmd ]
+            startGame model
 
         Populate npcs ->
             List.foldl M.addNpc model npcs ! []
 
         TimeDelta dt ->
             handleClockTick dt model
+
+
+startGame : Model -> ( Model, Cmd Msg )
+startGame model =
+    case model.game of
+        Playing _ _ _ ->
+            model ! []
+
+        Lobby ->
+            { model | game = M.startGame } ! [ populateCmd ]
+
+        GameOver _ ->
+            { model | game = M.startGame } ! [ populateCmd ]
 
 
 handleKeyAction : Int -> Bool -> Model -> ( Model, Cmd Msg )

@@ -36,9 +36,6 @@ Math.Vector2.Vec2's come in, and they go out. Simple
 import Math.Vector2 as Vector2 exposing (Vec2)
 
 
--- >>>>>>>>>>>>>>>>>>>>>>> PUBLIC API <<<<<<<<<<<<<<<<<<<<<<<<
-
-
 {-| Find the next point considering the boundary
 If we land outside the boundary, then calculate the new point
 and the new direction of the velocity.
@@ -111,11 +108,10 @@ scaleWithinBoundary boundary size position =
             position
 
 
-
--- Internal types to help make sense of functions / add some safety
-
-
 {-| Start position, original velocity, remaining current movement
+
+Internal types to help make sense of functions / add some safety
+
 -}
 type alias InMotion =
     { momentum : Vec2
@@ -211,7 +207,6 @@ slide boundaryRadius (Position outsidePoint) { momentum, position, velocity } =
             outsidePoint
                 |> scaleWithinBoundary boundaryRadius 0
                 |> Position
-                |> Debug.log "New Position: "
 
         (Velocity vel) =
             velocity
@@ -219,13 +214,9 @@ slide boundaryRadius (Position outsidePoint) { momentum, position, velocity } =
         tangentLine =
             tangentTowards newPosition (Position (Vector2.add outsidePoint vel))
 
-        --         |> Velocity
-        -- velDir =
-        --     Vector2.dir
         projectedVelocity =
             velocity
                 |> projectOn tangentLine
-                |> Debug.log "Projected Velocity: "
     in
         InMotion (Vector2.vec2 0 0) newPosition projectedVelocity
 
@@ -391,12 +382,9 @@ projectOn onto (Velocity projecting) =
 
         dot =
             Vector2.dot projecting normalB
-                |> Debug.log "DotProduct: "
 
         magSquared =
             (Vector2.length normalB) ^ 2
-
-        -- |> Debug.log "MagSqrd: "
     in
         if magSquared == 0 then
             Velocity (Vector2.vec2 0 0)
@@ -448,10 +436,6 @@ origin =
 unwrap : ( Position, Velocity ) -> ( Vec2, Vec2 )
 unwrap ( Position pos, Velocity vel ) =
     ( pos, vel )
-
-
-
--- Copied from elm-test
 
 
 {-| Smallest absolute value representable in a 64 bit float.
