@@ -11,7 +11,7 @@ import Html exposing (Html)
 import Keyboard exposing (..)
 import Time exposing (Time)
 import Random
-import Virus exposing (Virus)
+import Virus exposing (Player, Npc)
 
 
 main : Program Never Model Msg
@@ -129,7 +129,7 @@ tick keys clock culture _ model =
 -- CMDs
 
 
-npcCmd : Virus -> Cmd Msg
+npcCmd : Player -> Cmd Msg
 npcCmd virus =
     Random.generate Spawn <| Virus.random virus Config.boundaryRadius Config.maxNpcVelocity
 
@@ -138,7 +138,7 @@ populateCmd : Cmd Msg
 populateCmd =
     Random.generate Populate <|
         Random.list 10
-            (Virus.random (Virus.player Config.playerStartingSize) Config.boundaryRadius Config.maxNpcVelocity)
+            (Virus.random (Virus.player) Config.boundaryRadius Config.maxNpcVelocity)
 
 
 sustainPopulation : Model -> Model -> Cmd Msg

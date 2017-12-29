@@ -3,7 +3,7 @@ module Model exposing (..)
 import Clock exposing (Clock)
 import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
-import Virus exposing (BoundaryConflict(..), Mortal(..), Virus)
+import Virus exposing (BoundaryConflict(..), Mortal(..), Npc, Player)
 import Config exposing (gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize)
 
 
@@ -11,8 +11,8 @@ type Msg
     = End
     | KeyDown Int
     | KeyUp Int
-    | Populate (List Virus)
-    | Spawn Virus
+    | Populate (List Npc)
+    | Spawn Npc
     | StartGame
     | TimeDelta Time
 
@@ -29,8 +29,8 @@ type Game
 
 
 type alias Culture =
-    { npcs : List Virus
-    , player : Virus
+    { npcs : List Npc
+    , player : Player
     , score : Int
     }
 
@@ -39,9 +39,9 @@ type alias Culture =
 -- GAME submodel
 
 
-newPlayer : Virus
+newPlayer : Player
 newPlayer =
-    Virus.player playerStartingSize
+    Virus.player
 
 
 initGame : Game
@@ -100,14 +100,14 @@ updatePlayingState keys clock { npcs, player, score } =
                 Playing keys clock <| Culture remainingNpcs virus (score + 1)
 
 
-movePlayer : Float -> Keys -> Virus -> Virus
+movePlayer : Float -> Keys -> Player -> Player
 movePlayer boundaryRadius keys player =
     player
         |> Virus.applyAcceleration (Keys.keysToTuple keys)
         |> Virus.move Slide boundaryRadius
 
 
-moveNpc : Float -> Virus -> Virus
+moveNpc : Float -> Npc -> Npc
 moveNpc boundaryRadius npc =
     npc
         |> Virus.move Bounce boundaryRadius
@@ -117,7 +117,7 @@ moveNpc boundaryRadius npc =
 -- Spawn
 
 
-addNpc : Virus -> Model -> Model
+addNpc : Npc -> Model -> Model
 addNpc npc model =
     case model.game of
         GameOver _ ->
@@ -130,6 +130,6 @@ addNpc npc model =
             { model | game = Playing keys clock (addNpcToCulture npc culture) }
 
 
-addNpcToCulture : Virus -> Culture -> Culture
+addNpcToCulture : Npc -> Culture -> Culture
 addNpcToCulture npc culture =
     { culture | npcs = npc :: culture.npcs }

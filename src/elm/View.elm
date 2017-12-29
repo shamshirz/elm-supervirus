@@ -40,7 +40,7 @@ displayCulture { npcs, player, score } =
         ]
 
 
-banner : Virus -> Int -> Html Msg
+banner : Virus a -> Int -> Html Msg
 banner player score =
     div []
         [ div [] [ Html.text <| "Position: " ++ (toString player.location) ]
@@ -50,7 +50,7 @@ banner player score =
         ]
 
 
-drawCharacters : Virus -> List Virus -> Html msg
+drawCharacters : Player -> List Npc -> Html msg
 drawCharacters playerVirus npcs =
     draw <| player playerVirus :: List.map npc npcs
 
@@ -62,12 +62,12 @@ draw viruses =
             (petriDish :: viruses)
 
 
-player : Virus -> Collage.Form
+player : Player -> Collage.Form
 player =
     drawVirus Color.blue
 
 
-npc : Virus -> Collage.Form
+npc : Npc -> Collage.Form
 npc =
     drawVirus Color.darkRed
 
@@ -78,7 +78,7 @@ petriDish =
         |> Collage.outlined (Collage.solid Color.black)
 
 
-drawVirus : Color.Color -> Virus -> Collage.Form
+drawVirus : Color.Color -> Virus a -> Collage.Form
 drawVirus color virus =
     let
         ( x, y ) =
