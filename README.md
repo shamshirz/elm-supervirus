@@ -74,6 +74,7 @@ Prioritized
   * Favicon - 2 hrs
   * Title - 2 hrs
  * Win condition - 1 hr
+ * Feedback on form submit - 1hr
 
 
  Unpriotized
