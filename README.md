@@ -63,6 +63,7 @@ Prioritized
   * ~~Score tracking from eating~~
   * ~~Metabolism (combo)~~
   * ~~Metabolism indicator (visual, not just words)~~
+  * ~~Apply metabolism to acceleration~~
  * Add google analytics - 1 hr
  * Scenes
   * Lobby (controls & scoring) - 2hrs
