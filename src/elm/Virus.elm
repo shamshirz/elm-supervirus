@@ -19,7 +19,7 @@ import Virus.Generator as Gen
 import Virus.Math2D as Math2D
 import Math.Vector2 as Vector2 exposing (Vec2)
 import Random
-import Config exposing (playerStartingSize, maxVelocity, dragPercentage, transferableEnergy)
+import Config exposing (acceleration, playerStartingSize, maxVelocity, dragPercentage, transferableEnergy)
 
 
 {-| Base type
@@ -89,14 +89,15 @@ location { location } =
 -- >>>>>>>>>>>>>>>>>>>>>> UPDATES
 
 
-applyAcceleration : ( Float, Float ) -> Virus a -> Virus a
-applyAcceleration delta ({ location, size, velocity } as virus) =
+applyAcceleration : ( Float, Float ) -> Player -> Player
+applyAcceleration delta ({ location, size, velocity, metabolism } as player) =
     delta
         |> Vector2.fromTuple
+        |> Vector2.scale (metabolism * acceleration)
         |> Vector2.add velocity
         |> limitVelocity
         |> applyDrag
-        |> (\newVel -> { virus | velocity = newVel })
+        |> (\newVel -> { player | velocity = newVel })
 
 
 {-| scale velocity down proportionally to the amount of drag

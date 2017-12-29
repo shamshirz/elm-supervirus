@@ -18,7 +18,7 @@ import Time exposing (Time)
 
 acceleration : Float
 acceleration =
-    0.5
+    0.2
 
 
 boundaryRadius : Float

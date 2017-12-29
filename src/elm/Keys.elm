@@ -11,10 +11,6 @@ module Keys
 
 import Char exposing (fromCode, KeyCode)
 import EveryDict exposing (EveryDict)
-import Config exposing (acceleration)
-
-
---  I'm not really using the 'value' in this dict, key existance is kind of all that matters rn
 
 
 type GameKey
@@ -70,6 +66,9 @@ pressedKeys keys =
     EveryDict.keys keys
 
 
+{-| Returns a tuple indicating the direction
+speed etc should be applied after.
+-}
 keysToTuple : Keys -> ( Float, Float )
 keysToTuple keys =
     keys
@@ -81,13 +80,13 @@ foldKey : GameKey -> ( Float, Float ) -> ( Float, Float )
 foldKey key ( x, y ) =
     case key of
         Down ->
-            ( x, y - acceleration )
+            ( x, y - 1 )
 
         Left ->
-            ( x - acceleration, y )
+            ( x - 1, y )
 
         Right ->
-            ( x + acceleration, y )
+            ( x + 1, y )
 
         Up ->
-            ( x, y + acceleration )
+            ( x, y + 1 )
