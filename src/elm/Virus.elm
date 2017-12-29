@@ -240,7 +240,7 @@ eat enemy ({ location, size, velocity } as player) =
     in
         { player
             | metabolism = player.metabolism + difficulty
-            , prowess = player.prowess + (100 * difficulty)
+            , prowess = player.prowess + (100 * difficulty * player.metabolism)
             , size = size + metabolize enemy
         }
 

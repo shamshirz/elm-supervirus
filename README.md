@@ -58,9 +58,12 @@ Makin' gaimz.
 ### Phase 2: "Playtest"-able
 
 Prioritized
- * Restart keybind - 1 hr
+ * ~~Restart keybind - 1 hr~~
+ * ~~Scoring (combo tracking) - 6hrs~~
+  * ~~Score tracking from eating~~
+  * ~~Metabolism (combo)~~
+  * ~~Metabolism indicator (visual, not just words)~~
  * Add google analytics - 1 hr
- * Scoring (combo tracking) - 6hrs
  * Scenes
   * Lobby (controls & scoring) - 2hrs
   * GameOver (stats n' restart) - 1 hr

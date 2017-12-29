@@ -33,19 +33,20 @@ view { game } =
 
 
 displayCulture : Culture -> Html Msg
-displayCulture { npcs, player, score } =
+displayCulture { npcs, player } =
     div []
-        [ banner player score
+        [ banner player
         , drawCharacters player npcs
         ]
 
 
-banner : Virus a -> Int -> Html Msg
-banner player score =
+banner : Player -> Html Msg
+banner player =
     div []
         [ div [] [ Html.text <| "Position: " ++ (toString player.location) ]
         , div [] [ Html.text <| "Size: " ++ (toString player.size) ]
-        , div [] [ Html.text <| "Score: " ++ (toString score) ]
+        , div [] [ Html.text <| "Score: " ++ (toString <| round player.prowess) ]
+        , div [] [ Html.text <| "Metabolism: " ++ (toString player.metabolism) ]
         , br [] []
         ]
 
@@ -63,13 +64,26 @@ draw viruses =
 
 
 player : Player -> Collage.Form
-player =
-    drawVirus Color.blue
+player playerVirus =
+    let
+        intensity =
+            round (playerVirus.metabolism * 75)
+
+        red =
+            min (20 + intensity) 255
+
+        others =
+            max (50 - intensity) 0
+
+        color =
+            Color.rgb red others others
+    in
+        drawVirus color playerVirus
 
 
 npc : Npc -> Collage.Form
 npc =
-    drawVirus Color.darkRed
+    drawVirus <| Color.rgb 94 233 59
 
 
 petriDish : Collage.Form

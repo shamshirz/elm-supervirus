@@ -4,7 +4,7 @@ import Clock exposing (Clock)
 import Keys exposing (GameKey(..), Keys)
 import Time exposing (Time)
 import Virus exposing (BoundaryConflict(..), Mortal(..), Npc, Player)
-import Config exposing (gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize)
+import Config exposing (gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize, metabolismCost, metabolismResting)
 
 
 type Msg
@@ -31,7 +31,6 @@ type Game
 type alias Culture =
     { npcs : List Npc
     , player : Player
-    , score : Int
     }
 
 
@@ -52,7 +51,7 @@ initGame =
 startGame : Game
 startGame =
     Playing Keys.init (Clock.withPeriod gameLoopPeriod) <|
-        Culture [] newPlayer 0
+        Culture [] newPlayer
 
 
 endGame : Game
@@ -81,10 +80,12 @@ mapClock incomingClock game =
 
 
 updatePlayingState : Keys -> Clock -> Culture -> Game
-updatePlayingState keys clock { npcs, player, score } =
+updatePlayingState keys clock { npcs, player } =
     let
         newPlayer =
-            movePlayer boundaryRadius keys player
+            player
+                |> movePlayer boundaryRadius keys
+                |> reduceMetabolism
 
         newNpcs =
             List.map (moveNpc boundaryRadius) npcs
@@ -94,10 +95,24 @@ updatePlayingState keys clock { npcs, player, score } =
     in
         case mortalVirus of
             Dead ->
-                GameOver score
+                GameOver <| round player.prowess
 
             Alive virus ->
-                Playing keys clock <| Culture remainingNpcs virus (score + 1)
+                Playing keys clock <| Culture remainingNpcs virus
+
+
+{-| Reduces the metabolism towards a resting rate
+This has a greater impact the higher the metabolism is from resting
+change in metabolism is =
+((current - resting) * .01)
+This way your metabolism will never go below the resting, and it will
+be more challenging the higher your metabolism (aka the better your combo)
+-}
+reduceMetabolism : Player -> Player
+reduceMetabolism player =
+    { player
+        | metabolism = player.metabolism - ((player.metabolism - metabolismResting) * metabolismCost)
+    }
 
 
 movePlayer : Float -> Keys -> Player -> Player

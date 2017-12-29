@@ -6,6 +6,8 @@ module Config
         , gameLoopPeriod
         , maxNpcVelocity
         , maxVelocity
+        , metabolismCost
+        , metabolismResting
         , npcStartingSize
         , playerStartingSize
         , transferableEnergy
@@ -55,6 +57,16 @@ npcStartingSize =
 playerStartingSize : Float
 playerStartingSize =
     5
+
+
+metabolismResting : Float
+metabolismResting =
+    1
+
+
+metabolismCost : Float
+metabolismCost =
+    0.02
 
 
 transferableEnergy : Float
