@@ -58,23 +58,24 @@ Makin' gaimz.
 ### Phase 2: "Playtest"-able
 
 Prioritized
- * ~~Restart keybind - 1 hr~~
- * ~~Scoring (combo tracking) - 6hrs~~
+* ~~Restart keybind - 1 hr~~
+* ~~Scoring (combo tracking) - 6hrs~~
   * ~~Score tracking from eating~~
   * ~~Metabolism (combo)~~
   * ~~Metabolism indicator (visual, not just words)~~
   * ~~Apply metabolism to acceleration~~
- * Add google analytics - 1 hr
- * Scenes
+* Add google analytics - 1 hr
+* Scenes
   * Lobby (controls & scoring) - 2hrs
   * GameOver (stats n' restart) - 1 hr
- * Layout
-  * AgStudios logo - 1 hr
+* Layout
+  * ~~AgStudios logo - 1 hr~~
   * Github Link - 1 hr
   * Favicon - 2 hrs
-  * Title - 2 hrs
- * Win condition - 1 hr
- * Feedback on form submit - 1hr
+* Title - 2 hrs
+* Win condition - 1 hr
+* Feedback on form submit - 1hr
+* Game shouldn't listen while inputing into form
 
 
  Unpriotized

@@ -37,7 +37,13 @@ var commonConfig = {
             template: 'src/static/index.html',
             inject: 'body',
             filename: 'index.html'
-        })
+        }),
+        new CopyWebpackPlugin([{
+            from: 'src/static/img/',
+            to: 'static/img/'
+        }, {
+            from: 'src/favicon.ico'
+        }]),
     ]
 }
 
@@ -97,12 +103,6 @@ const prodSpecific = {
             filename: 'static/css/[name]-[hash].css',
             allChunks: true,
         }),
-        new CopyWebpackPlugin([{
-            from: 'src/static/img/',
-            to: 'static/img/'
-        }, {
-            from: 'src/favicon.ico'
-        }]),
         new webpack.optimize.UglifyJsPlugin({
             minimize: true,
             compressor: {
