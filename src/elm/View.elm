@@ -4,7 +4,8 @@ import Config exposing (boundaryRadius)
 import Color exposing (..)
 import Collage
 import Element
-import Html exposing (Html, button, div, p, br, text, span, Attribute)
+import Html exposing (Html, button, div, p, br, h2, img, text, span, Attribute)
+import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
 import Model exposing (..)
 import Virus exposing (..)
@@ -14,22 +15,25 @@ view : Model -> Html Msg
 view { game } =
     case game of
         GameOver score ->
-            div []
+            centered []
                 [ text <| "Game over, your score was : " ++ (toString score)
-                , div [] [ Html.button [ onClick StartGame ] [ text "Restart" ] ]
+                , playGif
                 ]
 
         Lobby ->
-            div []
-                [ text "Welcome to 2uperVirus!"
-                , div [] [ Html.button [ onClick StartGame ] [ text "Start" ] ]
-                ]
+            centered []
+                [ intro ]
 
         Playing _ _ culture ->
-            div []
+            centered []
                 [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
                 , displayCulture culture
                 ]
+
+
+centered : List (Html.Attribute msg) -> List (Html msg) -> Html msg
+centered attrs children =
+    div (class "centered" :: attrs) children
 
 
 displayCulture : Culture -> Html Msg
@@ -101,3 +105,34 @@ drawVirus color virus =
         Collage.circle virus.size
             |> Collage.filled color
             |> Collage.move ( x, y )
+
+
+intro : Html msg
+intro =
+    div [ class "intro" ]
+        [ div []
+            [ text "You are the second most lethal virus in the world, conquer the univers (pitri dish). Feed your insatiable hunger by eating lesser organisms."
+            , br [] []
+            , br [] []
+            , text "Tip: Keep your metabilism cranking, it will help you survive."
+            ]
+        , controls
+        , playGif
+        ]
+
+
+controls : Html msg
+controls =
+    div [ class "controls" ]
+        [ h2 [] [ text "Controls" ]
+        , text "use WASD to move around the pitri dish"
+        , text "Beware of anything larger than yourself!"
+        ]
+
+
+playGif : Html msg
+playGif =
+    div [ class "play-gif" ]
+        [ text "Hit space to play!"
+        , img [ src "static/img/pressspace.gif" ] []
+        ]
