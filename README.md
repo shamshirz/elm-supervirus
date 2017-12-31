@@ -64,13 +64,13 @@ Prioritized
   * ~~Metabolism (combo)~~
   * ~~Metabolism indicator (visual, not just words)~~
   * ~~Apply metabolism to acceleration~~
-* Add google analytics - 1 hr
+* ~~Add google analytics - 1 hr~~
 * Scenes
   * Lobby (controls & scoring) - 2hrs
   * GameOver (stats n' restart) - 1 hr
 * Layout
   * ~~AgStudios logo - 1 hr~~
-  * Github Link - 1 hr
+  * ~~Github Link - 1 hr~~
   * Favicon - 2 hrs
 * Title - 2 hrs
 * Win condition - 1 hr
