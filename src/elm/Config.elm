@@ -23,7 +23,7 @@ acceleration =
 
 boundaryRadius : Float
 boundaryRadius =
-    100
+    200
 
 
 dragPercentage : Float

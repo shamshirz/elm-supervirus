@@ -73,7 +73,7 @@ Prioritized
   * ~~Github Link - 1 hr~~
   * Favicon - 2 hrs
 * Dish sizing
-  * Larger - 1hr
+  * ~~Larger - 1hr~~
   * viewport - ??
 * Title - 2 hrs
 * Win condition - 1 hr
