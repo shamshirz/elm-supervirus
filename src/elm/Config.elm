@@ -18,12 +18,12 @@ import Time exposing (Time)
 
 acceleration : Float
 acceleration =
-    0.2
+    0.6
 
 
 boundaryRadius : Float
 boundaryRadius =
-    200
+    225
 
 
 dragPercentage : Float
@@ -46,7 +46,7 @@ maxNpcVelocity =
 
 maxVelocity : Float
 maxVelocity =
-    2.5
+    4
 
 
 npcStartingSize : Float
