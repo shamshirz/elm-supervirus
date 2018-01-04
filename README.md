@@ -30,8 +30,8 @@ Makin' gaimz.
 ### ~~Phase 1: Playable~~
 
   <details>
+  <summary>Completed</summary>
 
-  #### Complete
   * ~~Replace favicon & only page~~
   * ~~Collision detection~~
   * ~~Boundaries~~
@@ -55,29 +55,35 @@ Makin' gaimz.
   </details>
 
 
-### Phase 2: "Playtest"-able
+### ~~Phase 2: "Playtest"-able~~
+
+  <details>
+  <summary>Completed</summary>
+
+  * ~~Restart keybind - 1 hr~~
+  * ~~Scoring (combo tracking) - 6hrs~~
+    * ~~Score tracking from eating~~
+    * ~~Metabolism (combo)~~
+    * ~~Metabolism indicator (visual, not just words)~~
+    * ~~Apply metabolism to acceleration~~
+  * ~~Add google analytics - 1 hr~~
+  * ~~Scenes~~
+    * ~~Lobby (controls & scoring) - 2hrs~~
+    * ~~GameOver (stats n' restart) - 1 hr~~
+  * Layout
+    * ~~AgStudios logo - 1 hr~~
+    * ~~Github Link - 1 hr~~
+  * ~~Dish sizing~~
+    * ~~Larger - 1hr~~
+  * ~~Feedback on form submit - 1hr~~
+
+  </details>
 
 Prioritized
-* ~~Restart keybind - 1 hr~~
-* ~~Scoring (combo tracking) - 6hrs~~
-  * ~~Score tracking from eating~~
-  * ~~Metabolism (combo)~~
-  * ~~Metabolism indicator (visual, not just words)~~
-  * ~~Apply metabolism to acceleration~~
-* ~~Add google analytics - 1 hr~~
-* Scenes
-  * ~~Lobby (controls & scoring) - 2hrs~~
-  * GameOver (stats n' restart) - 1 hr
-* Layout
-  * ~~AgStudios logo - 1 hr~~
-  * ~~Github Link - 1 hr~~
-  * Favicon - 2 hrs
-* Dish sizing
-  * ~~Larger - 1hr~~
-  * viewport - ??
+* Favicon - 2 hrs
 * Title - 2 hrs
 * Win condition - 1 hr
-* Feedback on form submit - 1hr
+* viewport - ??
 * Game shouldn't listen while inputing into form
 
 
@@ -105,9 +111,6 @@ Prioritized
  * ???
  * Gromit!
 
- #### Complete
- *
-
 
 ### Phase 3
 DreamTime.
@@ -117,3 +120,4 @@ DreamTime.
   * diffusion type
 * css transitions and/or animations outside of the game
 * Other keys can do other things
+* Build it again in Unity
