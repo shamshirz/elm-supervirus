@@ -80,11 +80,12 @@ Makin' gaimz.
   </details>
 
 Prioritized
-* Favicon - 2 hrs
-* Title - 2 hrs
+* Remove the stat tracking info from ingame
 * Win condition - 1 hr
-* viewport - ??
 * Game shouldn't listen while inputing into form
+* Title - 2 hrs
+* viewport - ??
+* Favicon - 2 hrs
 
 
  Unpriotized
