@@ -119,7 +119,7 @@ movePlayer : Float -> Keys -> Player -> Player
 movePlayer boundaryRadius keys player =
     player
         |> Virus.applyAcceleration (Keys.keysToTuple keys)
-        |> Virus.move Slide boundaryRadius
+        |> Virus.move Bounce boundaryRadius
 
 
 moveNpc : Float -> Npc -> Npc

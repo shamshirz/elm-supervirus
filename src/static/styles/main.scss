@@ -156,6 +156,29 @@ textarea {
   }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.request-overlay {
+  position: absolute;
+  color: black;
+  margin-top: 2rem;
+  transform: rotate(10deg);
+
+  animation-name: fadeIn;
+  animation-delay: 0.5s;
+  animation-duration: 0.5s;
+  transition-timing-function: ease-in;
+  animation-fill-mode: both;
+}
+
 .centered {
   display: flex;
   flex-direction: column;

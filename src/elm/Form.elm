@@ -3,8 +3,11 @@ module Form exposing (..)
 import Html exposing (Html, Attribute, footer, div, input, text, textarea)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onSubmit, onBlur)
-import RemoteData exposing (WebData)
 import Http
+import Process
+import RemoteData exposing (WebData)
+import Task
+import Time exposing (Time)
 
 
 main : Program Never Model Msg
@@ -49,7 +52,8 @@ init =
 
 
 type Msg
-    = SubmitFeedback
+    = ResetRequest
+    | SubmitFeedback
     | SubmitCompleted (WebData ())
     | UpdateFeedback String
 
@@ -64,10 +68,19 @@ update msg model =
             submit model
 
         SubmitCompleted ((RemoteData.Success _) as data) ->
-            { model | feedback = "", submitRequest = data } ! []
+            { model | feedback = "", submitRequest = data } ! [ resetDebouncer ]
 
         SubmitCompleted data ->
-            { model | submitRequest = data } ! []
+            { model | submitRequest = data } ! [ resetDebouncer ]
+
+        ResetRequest ->
+            { model | submitRequest = RemoteData.NotAsked } ! []
+
+
+resetDebouncer : Cmd Msg
+resetDebouncer =
+    Process.sleep (10000 * Time.millisecond)
+        |> Task.perform (always <| ResetRequest)
 
 
 submit : Model -> ( Model, Cmd Msg )
@@ -121,28 +134,28 @@ view { feedback, submitRequest } =
     case submitRequest of
         RemoteData.Loading ->
             -- indicate that it's in flight
-            createForm Nothing feedback
+            feedbackForm feedback (overlayMessage "Sending…")
 
         RemoteData.Failure reason ->
-            createForm (Just "Yikes, tell Aaron!") feedback
+            feedbackForm feedback (overlayMessage "That didn't work as planned… Try it again in a sec")
 
         RemoteData.Success _ ->
-            createForm Nothing feedback
+            feedbackForm feedback (overlayMessage "Thanks!")
 
         RemoteData.NotAsked ->
-            createForm Nothing feedback
+            feedbackForm feedback []
 
 
-createForm : Maybe String -> String -> Html Msg
-createForm mMessage formText =
-    let
-        children =
-            mMessage
-                |> Maybe.map (\message -> [ userInput formText, formMessage message ])
-                |> Maybe.withDefault [ userInput formText ]
-    in
-        Html.form [ class "feedback-form", onSubmit SubmitFeedback ]
-            children
+feedbackForm : String -> List (Html Msg) -> Html Msg
+feedbackForm formText children =
+    Html.form [ class "feedback-form", onSubmit SubmitFeedback ] <|
+        (userInput formText)
+            :: children
+
+
+overlayMessage : String -> List (Html Msg)
+overlayMessage text_ =
+    [ div [ class "request-overlay" ] [ text text_ ] ]
 
 
 userInput : String -> Html Msg
