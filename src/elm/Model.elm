@@ -27,6 +27,7 @@ type Game
     = GameOver Int
     | Lobby
     | Playing Keys Clock Culture
+    | Win Int
 
 
 type alias Culture =
@@ -123,7 +124,10 @@ updatePlayingState keys clock { collisions, npcs, player } =
                 GameOver <| round player.prowess
 
             Alive virus ->
-                Playing keys clock <| Culture newCollisions mergedNpcs virus
+                if virus.size >= (boundaryRadius * 0.6) then
+                    Win <| round player.prowess
+                else
+                    Playing keys clock <| Culture newCollisions mergedNpcs virus
 
 
 chronicalCollision : Collision -> Maybe Collision
@@ -168,14 +172,11 @@ moveNpc boundaryRadius npc =
 addNpc : Npc -> Model -> Model
 addNpc npc model =
     case model.game of
-        GameOver _ ->
-            model
-
-        Lobby ->
-            model
-
         Playing keys clock culture ->
             { model | game = Playing keys clock (addNpcToCulture npc culture) }
+
+        _ ->
+            model
 
 
 addNpcToCulture : Npc -> Culture -> Culture

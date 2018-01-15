@@ -59,7 +59,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         End ->
-            { model | game = M.endGame } ! []
+            { model | game = Win 0 } ! []
 
         KeyDown 32 ->
             startGame model
@@ -93,6 +93,9 @@ startGame model =
             { model | game = M.startGame } ! [ populateCmd ]
 
         GameOver _ ->
+            { model | game = M.startGame } ! [ populateCmd ]
+
+        Win _ ->
             { model | game = M.startGame } ! [ populateCmd ]
 
 

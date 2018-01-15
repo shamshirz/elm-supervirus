@@ -30,6 +30,10 @@ view { game } =
                 , displayCulture culture
                 ]
 
+        Win score ->
+            centered [] <|
+                winView score
+
 
 centered : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 centered attrs children =
@@ -142,3 +146,17 @@ playGif =
         [ text "Hit space to play!"
         , img [ src "static/img/pressspace.gif" ] []
         ]
+
+
+winView : Int -> List (Html Msg)
+winView score =
+    [ span [ class "win-congrats" ] [ text "Congrats" ]
+    , span [ class "win-body" ]
+        [ text <| "Score: " ++ (toString score)
+        , br [] []
+        , br [] []
+        , text "You Won…Didn't actually think this was possibre."
+        , br [] []
+        , text "Seriously though, tell Aaron, send a screenshot. He will buy you a cookie."
+        ]
+    ]
