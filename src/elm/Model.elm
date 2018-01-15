@@ -16,6 +16,7 @@ type Msg
     | Spawn Npc
     | StartGame
     | TimeDelta Time
+    | Toggle
 
 
 type alias Model =
@@ -27,6 +28,7 @@ type Game
     = GameOver Int
     | Lobby
     | Playing Keys Clock Culture
+    | Paused Clock Culture
     | Win Int
 
 

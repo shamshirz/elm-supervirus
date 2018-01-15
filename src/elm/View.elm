@@ -24,6 +24,14 @@ view { game } =
             centered []
                 [ intro ]
 
+        Paused clock culture ->
+            -- Maybe show stats here
+            centered []
+                [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
+                , displayCulture culture
+                , paused
+                ]
+
         Playing _ _ culture ->
             centered []
                 [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
@@ -38,6 +46,11 @@ view { game } =
 centered : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 centered attrs children =
     div (class "centered" :: attrs) children
+
+
+paused : Html msg
+paused =
+    div [ class "paused" ] [ text "Paused" ]
 
 
 displayCulture : Culture -> Html Msg

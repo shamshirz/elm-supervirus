@@ -62,7 +62,7 @@ update msg model =
             { model | game = Win 0 } ! []
 
         KeyDown 32 ->
-            startGame model
+            toggleState model
 
         KeyDown keyNum ->
             handleKeyAction keyNum True model
@@ -82,21 +82,32 @@ update msg model =
         TimeDelta dt ->
             handleClockTick dt model
 
+        Toggle ->
+            toggleState model
+
+
+toggleState : Model -> ( Model, Cmd Msg )
+toggleState model =
+    case model.game of
+        GameOver _ ->
+            startGame model
+
+        Lobby ->
+            startGame model
+
+        Paused clock culture ->
+            { model | game = Playing Keys.init clock culture } ! []
+
+        Playing _ clock culture ->
+            { model | game = Paused clock culture } ! []
+
+        Win _ ->
+            startGame model
+
 
 startGame : Model -> ( Model, Cmd Msg )
 startGame model =
-    case model.game of
-        Playing _ _ _ ->
-            model ! []
-
-        Lobby ->
-            { model | game = M.startGame } ! [ populateCmd ]
-
-        GameOver _ ->
-            { model | game = M.startGame } ! [ populateCmd ]
-
-        Win _ ->
-            { model | game = M.startGame } ! [ populateCmd ]
+    { model | game = M.startGame } ! [ populateCmd ]
 
 
 handleKeyAction : Int -> Bool -> Model -> ( Model, Cmd Msg )
