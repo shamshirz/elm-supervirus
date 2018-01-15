@@ -1,10 +1,11 @@
 module Model exposing (..)
 
 import Clock exposing (Clock)
+import Config exposing (collisionMaxAge, gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize, metabolismCost, metabolismResting)
 import Keys exposing (GameKey(..), Keys)
+import Math.Vector2 as Vector2 exposing (Vec2)
 import Time exposing (Time)
 import Virus exposing (BoundaryConflict(..), Mortal(..), Npc, Player)
-import Config exposing (gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize, metabolismCost, metabolismResting)
 
 
 type Msg
@@ -29,9 +30,21 @@ type Game
 
 
 type alias Culture =
-    { npcs : List Npc
+    { collisions : List Collision
+    , npcs : List Npc
     , player : Player
     }
+
+
+{-| Collision location magnitude age
+-}
+type Collision
+    = Collision Vec2 Float Float
+
+
+collisionLocation : Collision -> ( Float, Float )
+collisionLocation (Collision location _ _) =
+    Vector2.toTuple location
 
 
 
@@ -51,7 +64,7 @@ initGame =
 startGame : Game
 startGame =
     Playing Keys.init (Clock.withPeriod gameLoopPeriod) <|
-        Culture [] newPlayer
+        Culture [] [] newPlayer
 
 
 endGame : Game
@@ -80,7 +93,7 @@ mapClock incomingClock game =
 
 
 updatePlayingState : Keys -> Clock -> Culture -> Game
-updatePlayingState keys clock { npcs, player } =
+updatePlayingState keys clock { collisions, npcs, player } =
     let
         newPlayer =
             player
@@ -95,13 +108,30 @@ updatePlayingState keys clock { npcs, player } =
 
         mergedNpcs =
             Virus.mergeNpcs [] remainingNpcs
+
+        isDefeated npc =
+            not <| List.any (\vir -> vir.location == npc.location) mergedNpcs
+
+        newCollisions =
+            List.filter (isDefeated) newNpcs
+                |> List.map (\{ location, size } -> Collision location size 0)
+                |> List.foldl (::) collisions
+                |> List.filterMap chronicalCollision
     in
         case mortalVirus of
             Dead ->
                 GameOver <| round player.prowess
 
             Alive virus ->
-                Playing keys clock <| Culture mergedNpcs virus
+                Playing keys clock <| Culture newCollisions mergedNpcs virus
+
+
+chronicalCollision : Collision -> Maybe Collision
+chronicalCollision (Collision location magnitude age) =
+    if age >= collisionMaxAge then
+        Nothing
+    else
+        Just <| Collision location magnitude (age + 1)
 
 
 {-| Reduces the metabolism towards a resting rate

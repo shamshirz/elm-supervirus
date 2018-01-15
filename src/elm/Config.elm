@@ -2,6 +2,7 @@ module Config
     exposing
         ( acceleration
         , boundaryRadius
+        , collisionMaxAge
         , dragPercentage
         , gameLoopPeriod
         , maxNpcVelocity
@@ -24,6 +25,11 @@ acceleration =
 boundaryRadius : Float
 boundaryRadius =
     225
+
+
+collisionMaxAge : Float
+collisionMaxAge =
+    33
 
 
 dragPercentage : Float

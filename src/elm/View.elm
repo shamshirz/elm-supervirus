@@ -1,6 +1,6 @@
 module View exposing (view)
 
-import Config exposing (boundaryRadius)
+import Config exposing (boundaryRadius, collisionMaxAge)
 import Color exposing (..)
 import Collage
 import Element
@@ -38,14 +38,39 @@ centered attrs children =
 
 displayCulture : Culture -> Html Msg
 displayCulture culture =
-    draw <| player culture.player :: List.map npc culture.npcs
+    culture.npcs
+        |> List.map npc
+        |> (::) (player culture.player)
+        |> consCollisions culture.collisions
+        |> (::) petriDish
+        |> draw
+
+
+consCollisions : List Collision -> List Collage.Form -> List Collage.Form
+consCollisions collisions elements =
+    collisions
+        |> List.map collisionElement
+        |> List.foldl (::) elements
+
+
+collisionElement : Collision -> Collage.Form
+collisionElement ((Collision location magnitude age) as col) =
+    let
+        lifeSpanRatio =
+            age / collisionMaxAge
+
+        size =
+            magnitude + (lifeSpanRatio * 10)
+    in
+        Collage.circle size
+            |> Collage.filled (Color.rgba 255 0 0 (1 - lifeSpanRatio))
+            |> Collage.move (collisionLocation col)
 
 
 draw : List Collage.Form -> Html msg
-draw viruses =
+draw elements =
     Element.toHtml <|
-        Collage.collage 500 500 <|
-            (petriDish :: viruses)
+        Collage.collage 500 500 elements
 
 
 player : Player -> Collage.Form
