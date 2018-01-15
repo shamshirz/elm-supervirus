@@ -17,7 +17,7 @@ view ({ game } as model) =
         Lobby ->
             pageBody model intro
 
-        Paused clock culture ->
+        Paused clock culture _ ->
             -- Maybe show stats here
             pageBody model <| paused culture
 

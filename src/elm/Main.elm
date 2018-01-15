@@ -41,6 +41,10 @@ subscriptions { game } =
                 , AnimationFrame.diffs TimeDelta
                 ]
 
+        Paused _ _ True ->
+            -- We are editing the form
+            Sub.none
+
         _ ->
             Sub.batch [ Keyboard.downs KeyDown ]
 
@@ -65,6 +69,9 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        EditForm ->
+            pause model True ! []
+
         End ->
             { model | game = Win 0 } ! []
 
@@ -73,6 +80,7 @@ update msg model =
 
         FormSubmitFeedback ->
             submit model
+                |> Tuple.mapFirst unPause
 
         FormSubmitCompleted ((RemoteData.Success _) as data) ->
             { model | feedback = "", submitRequest = data } ! [ resetDebouncer ]
@@ -108,6 +116,26 @@ update msg model =
             toggleState model
 
 
+pause : Model -> Bool -> Model
+pause model editingForm =
+    case model.game of
+        Playing _ clock culture ->
+            { model | game = Paused clock culture editingForm }
+
+        _ ->
+            model
+
+
+unPause : Model -> Model
+unPause model =
+    case model.game of
+        Paused clock culture _ ->
+            { model | game = Playing Keys.init clock culture }
+
+        _ ->
+            model
+
+
 toggleState : Model -> ( Model, Cmd Msg )
 toggleState model =
     case model.game of
@@ -117,11 +145,11 @@ toggleState model =
         Lobby ->
             startGame model
 
-        Paused clock culture ->
-            { model | game = Playing Keys.init clock culture } ! []
+        Paused clock culture _ ->
+            unPause model ! []
 
         Playing _ clock culture ->
-            { model | game = Paused clock culture } ! []
+            pause model False ! []
 
         Win _ ->
             startGame model

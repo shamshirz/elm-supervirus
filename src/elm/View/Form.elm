@@ -2,7 +2,7 @@ module View.Form exposing (view)
 
 import Html exposing (Html, Attribute, a, footer, div, img, input, text, textarea)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onSubmit, onBlur)
+import Html.Events exposing (onInput, onFocus, onSubmit, onBlur)
 import RemoteData exposing (WebData)
 import Model exposing (Model, Msg(..))
 
@@ -70,6 +70,7 @@ userInput text_ =
         [ id "textArea"
         , name "message"
         , onInput FormUpdateFeedback
+        , onFocus EditForm
         , onBlur FormSubmitFeedback
         , placeholder "Help me make this better, leave any thoughts here! (saves automatically)"
         , value text_

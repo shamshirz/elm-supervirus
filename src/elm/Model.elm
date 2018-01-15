@@ -5,13 +5,13 @@ import Config exposing (collisionMaxAge, gameLoopPeriod, boundaryRadius, playerS
 import Keys exposing (GameKey(..), Keys)
 import Math.Vector2 as Vector2 exposing (Vec2)
 import RemoteData exposing (WebData)
-import Task
 import Time exposing (Time)
 import Virus exposing (BoundaryConflict(..), Mortal(..), Npc, Player)
 
 
 type Msg
-    = End
+    = EditForm
+    | End
     | FormResetRequest
     | FormSubmitFeedback
     | FormSubmitCompleted (WebData ())
@@ -36,7 +36,7 @@ type Game
     = GameOver Int
     | Lobby
     | Playing Keys Clock Culture
-    | Paused Clock Culture
+    | Paused Clock Culture Bool
     | Win Int
 
 
