@@ -83,9 +83,9 @@ Prioritized
 * ~~Remove the stat tracking info from ingame - 30m~~
 * ~~Add collision visual effect - 2 hr~~
 * ~~Add Pause State - 0.5 hr~~
-* Improve lobby (clear goals and nice styling) - 1hr
+* ~~Improve lobby (clear goals and nice styling) - 1hr~~
 * ~~Win condition - 1 hr~~
-* Game shouldn't listen while inputing into form
+* ~~Game shouldn't listen while inputing into form - 2 hr~~
 * Title - 2 hrs
 * viewport - ??
 * Favicon - 2 hrs

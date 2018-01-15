@@ -41,7 +41,7 @@ pageHeader : Html Msg
 pageHeader =
     header []
         [ div [ class "background__header" ] []
-        , div [ class "header" ] [ text "2upervirus: Evolution" ]
+        , div [ class "header" ] [ text "2upervirus" ]
         ]
 
 
@@ -52,12 +52,12 @@ centered attrs children =
 
 intro : Html msg
 intro =
-    div [ class "intro" ]
+    div [ class "controls" ]
         [ div []
-            [ text "You are the second most lethal virus in the world, conquer the univers (pitri dish). Feed your insatiable hunger by eating lesser organisms."
+            [ text "You are a Virus. You are Hungry."
             , br [] []
             , br [] []
-            , text "Tip: Keep your metabilism cranking, it will help you survive."
+            , text "Tip: Be Faster."
             ]
         , controls
         , playGif
@@ -91,6 +91,7 @@ gameOver score =
     centered []
         [ text <| "Game over, your score was : " ++ (toString score)
         , playGif
+        , div [ class "margin-top" ] [ text "▼ Tell me what you thought!" ]
         ]
 
 
@@ -98,8 +99,7 @@ controls : Html msg
 controls =
     div [ class "controls" ]
         [ h2 [] [ text "Controls" ]
-        , text "use WASD to move around the pitri dish"
-        , text "Beware of anything larger than yourself!"
+        , text "WASD"
         ]
 
 
