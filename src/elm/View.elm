@@ -37,27 +37,8 @@ centered attrs children =
 
 
 displayCulture : Culture -> Html Msg
-displayCulture { npcs, player } =
-    div []
-        [ banner player
-        , drawCharacters player npcs
-        ]
-
-
-banner : Player -> Html Msg
-banner player =
-    div []
-        [ div [] [ Html.text <| "Position: " ++ (toString player.location) ]
-        , div [] [ Html.text <| "Size: " ++ (toString player.size) ]
-        , div [] [ Html.text <| "Score: " ++ (toString <| round player.prowess) ]
-        , div [] [ Html.text <| "Metabolism: " ++ (toString player.metabolism) ]
-        , br [] []
-        ]
-
-
-drawCharacters : Player -> List Npc -> Html msg
-drawCharacters playerVirus npcs =
-    draw <| player playerVirus :: List.map npc npcs
+displayCulture culture =
+    draw <| player culture.player :: List.map npc culture.npcs
 
 
 draw : List Collage.Form -> Html msg

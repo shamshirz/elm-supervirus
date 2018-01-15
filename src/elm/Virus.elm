@@ -3,6 +3,7 @@ module Virus
         ( applyAcceleration
         , BoundaryConflict(..)
         , location
+        , mergeNpcs
         , Mortal(..)
         , move
         , Npc
@@ -188,6 +189,52 @@ moveAndScale boundaryRadius ({ location, size, velocity } as virus) =
 type Mortal a
     = Alive a
     | Dead
+
+
+
+-- >>>>>>>>>>>>>>>>>>>>>> NPC BATTLES
+
+
+{-| Recursive
+Start: (initialList, acc) -> acc
+Side effect: Reverses the list, but I don't think that matters
+-}
+mergeNpcs : List Npc -> List Npc -> List Npc
+mergeNpcs accumulator npcs =
+    case npcs of
+        [] ->
+            accumulator
+
+        virus :: [] ->
+            virus :: accumulator
+
+        virus :: remaining ->
+            battleNpc virus remaining
+                |> (\( winner, newRemaining ) -> mergeNpcs (winner :: accumulator) newRemaining)
+
+
+{-| Order of args question here
+Possibly this would make more sense being the list to fight
+followed by our character
+Then pipe might make more sense
+
+myVirus
+|> battleNpc listNpcs
+
+-}
+battleNpc : Npc -> List Npc -> ( Npc, List Npc )
+battleNpc virus npcs =
+    npcs
+        |> List.partition (isCollision virus)
+        |> Tuple.mapFirst (List.foldl merge virus)
+
+
+merge : Npc -> Npc -> Npc
+merge virusA virusB =
+    if virusA.size >= virusB.size then
+        { virusA | size = virusA.size + metabolize virusB }
+    else
+        { virusB | size = virusB.size + metabolize virusA }
 
 
 {-| resolveBattles

@@ -80,7 +80,8 @@ Makin' gaimz.
   </details>
 
 Prioritized
-* Remove the stat tracking info from ingame
+* Remove the stat tracking info from ingame - 30m
+* Improve lobby (clear goals and nice styling) - 1hr
 * Win condition - 1 hr
 * Game shouldn't listen while inputing into form
 * Title - 2 hrs

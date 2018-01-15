@@ -92,13 +92,16 @@ updatePlayingState keys clock { npcs, player } =
 
         ( mortalVirus, remainingNpcs ) =
             Virus.resolveBattles newPlayer newNpcs
+
+        mergedNpcs =
+            Virus.mergeNpcs [] remainingNpcs
     in
         case mortalVirus of
             Dead ->
                 GameOver <| round player.prowess
 
             Alive virus ->
-                Playing keys clock <| Culture remainingNpcs virus
+                Playing keys clock <| Culture mergedNpcs virus
 
 
 {-| Reduces the metabolism towards a resting rate
