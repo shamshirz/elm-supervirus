@@ -3,14 +3,17 @@ module Main exposing (..)
 import AnimationFrame
 import Clock exposing (Clock)
 import Config
-import Model as M exposing (Msg(..), Game(..), Model, Culture)
-import Keys exposing (Keys)
-import View exposing (view)
-import Html exposing (div)
-import Html exposing (Html)
+import Html exposing (Html, div)
+import Http
 import Keyboard exposing (..)
-import Time exposing (Time)
+import Keys exposing (Keys)
+import Model as M exposing (Msg(..), Game(..), Model, Culture)
+import Process
 import Random
+import RemoteData exposing (WebData)
+import Task
+import Time exposing (Time)
+import View exposing (view)
 import Virus exposing (Player, Npc)
 
 
@@ -48,7 +51,11 @@ subscriptions { game } =
 
 init : ( Model, Cmd Msg )
 init =
-    { game = M.initGame } ! []
+    { feedback = ""
+    , game = M.initGame
+    , submitRequest = RemoteData.NotAsked
+    }
+        ! []
 
 
 
@@ -60,6 +67,21 @@ update msg model =
     case msg of
         End ->
             { model | game = Win 0 } ! []
+
+        FormUpdateFeedback newFeedback ->
+            { model | feedback = newFeedback } ! []
+
+        FormSubmitFeedback ->
+            submit model
+
+        FormSubmitCompleted ((RemoteData.Success _) as data) ->
+            { model | feedback = "", submitRequest = data } ! [ resetDebouncer ]
+
+        FormSubmitCompleted data ->
+            { model | submitRequest = data } ! [ resetDebouncer ]
+
+        FormResetRequest ->
+            { model | submitRequest = RemoteData.NotAsked } ! []
 
         KeyDown 32 ->
             toggleState model
@@ -173,3 +195,51 @@ sustainPopulation lastState currentState =
 
         _ ->
             Cmd.none
+
+
+resetDebouncer : Cmd Msg
+resetDebouncer =
+    Process.sleep (10000 * Time.millisecond)
+        |> Task.perform (always <| FormResetRequest)
+
+
+submit : Model -> ( Model, Cmd Msg )
+submit ({ feedback } as model) =
+    if feedback == "" then
+        let
+            _ =
+                Debug.log "Submit: " "Not submitting, empty form"
+        in
+            model ! []
+    else
+        let
+            _ =
+                Debug.log "Submit: " feedback
+        in
+            { model | submitRequest = RemoteData.Loading } ! [ submitCmd feedback ]
+
+
+submitCmd : String -> Cmd Msg
+submitCmd formContent =
+    let
+        body2 =
+            Http.stringBody "application/x-www-form-urlencoded" <|
+                "form-name=feedback&message="
+                    ++ toString (Http.encodeUri formContent)
+    in
+        formPost body2
+            |> RemoteData.sendRequest
+            |> Cmd.map FormSubmitCompleted
+
+
+formPost : Http.Body -> Http.Request ()
+formPost body =
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Content-Type" "application/x-www-form-urlencoded" ]
+        , url = "/"
+        , body = body
+        , expect = Http.expectStringResponse (\_ -> Ok ())
+        , timeout = Nothing
+        , withCredentials = False
+        }

@@ -4,12 +4,18 @@ import Clock exposing (Clock)
 import Config exposing (collisionMaxAge, gameLoopPeriod, boundaryRadius, playerStartingSize, npcStartingSize, metabolismCost, metabolismResting)
 import Keys exposing (GameKey(..), Keys)
 import Math.Vector2 as Vector2 exposing (Vec2)
+import RemoteData exposing (WebData)
+import Task
 import Time exposing (Time)
 import Virus exposing (BoundaryConflict(..), Mortal(..), Npc, Player)
 
 
 type Msg
     = End
+    | FormResetRequest
+    | FormSubmitFeedback
+    | FormSubmitCompleted (WebData ())
+    | FormUpdateFeedback String
     | KeyDown Int
     | KeyUp Int
     | Populate (List Npc)
@@ -20,7 +26,9 @@ type Msg
 
 
 type alias Model =
-    { game : Game
+    { feedback : String
+    , game : Game
+    , submitRequest : WebData ()
     }
 
 

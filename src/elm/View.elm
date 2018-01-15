@@ -1,133 +1,53 @@
 module View exposing (view)
 
-import Config exposing (boundaryRadius, collisionMaxAge)
-import Color exposing (..)
-import Collage
-import Element
-import Html exposing (Html, button, div, p, br, h2, img, text, span, Attribute)
+import Html exposing (Html, button, div, p, br, h2, header, img, text, span, Attribute)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
 import Model exposing (..)
-import Virus exposing (..)
+import View.Game
+import View.Form
 
 
 view : Model -> Html Msg
-view { game } =
+view ({ game } as model) =
     case game of
         GameOver score ->
-            centered []
-                [ text <| "Game over, your score was : " ++ (toString score)
-                , playGif
-                ]
+            pageBody model <| gameOver score
 
         Lobby ->
-            centered []
-                [ intro ]
+            pageBody model intro
 
         Paused clock culture ->
             -- Maybe show stats here
-            centered []
-                [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
-                , displayCulture culture
-                , paused
-                ]
+            pageBody model <| paused culture
 
         Playing _ _ culture ->
-            centered []
-                [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
-                , displayCulture culture
-                ]
+            pageBody model <| playing culture
 
         Win score ->
-            centered [] <|
-                winView score
+            pageBody model <| centered [] (winView score)
+
+
+pageBody : Model -> Html Msg -> Html Msg
+pageBody model body =
+    div [ class "main" ]
+        [ pageHeader
+        , div [ class "game" ] [ body ]
+        , View.Form.view model
+        ]
+
+
+pageHeader : Html Msg
+pageHeader =
+    header []
+        [ div [ class "background__header" ] []
+        , div [ class "header" ] [ text "2upervirus: Evolution" ]
+        ]
 
 
 centered : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 centered attrs children =
     div (class "centered" :: attrs) children
-
-
-paused : Html msg
-paused =
-    div [ class "paused" ] [ text "Paused" ]
-
-
-displayCulture : Culture -> Html Msg
-displayCulture culture =
-    culture.npcs
-        |> List.map npc
-        |> (::) (player culture.player)
-        |> consCollisions culture.collisions
-        |> (::) petriDish
-        |> draw
-
-
-consCollisions : List Collision -> List Collage.Form -> List Collage.Form
-consCollisions collisions elements =
-    collisions
-        |> List.map collisionElement
-        |> List.foldl (::) elements
-
-
-collisionElement : Collision -> Collage.Form
-collisionElement ((Collision location magnitude age) as col) =
-    let
-        lifeSpanRatio =
-            age / collisionMaxAge
-
-        size =
-            magnitude + (lifeSpanRatio * 10)
-    in
-        Collage.circle size
-            |> Collage.filled (Color.rgba 255 0 0 (1 - lifeSpanRatio))
-            |> Collage.move (collisionLocation col)
-
-
-draw : List Collage.Form -> Html msg
-draw elements =
-    Element.toHtml <|
-        Collage.collage 500 500 elements
-
-
-player : Player -> Collage.Form
-player playerVirus =
-    let
-        intensity =
-            round (playerVirus.metabolism * 75)
-
-        red =
-            min (20 + intensity) 255
-
-        others =
-            max (50 - intensity) 0
-
-        color =
-            Color.rgb red others others
-    in
-        drawVirus color playerVirus
-
-
-npc : Npc -> Collage.Form
-npc =
-    drawVirus <| Color.rgb 94 233 59
-
-
-petriDish : Collage.Form
-petriDish =
-    Collage.circle boundaryRadius
-        |> Collage.outlined (Collage.solid Color.black)
-
-
-drawVirus : Color.Color -> Virus a -> Collage.Form
-drawVirus color virus =
-    let
-        ( x, y ) =
-            location virus
-    in
-        Collage.circle virus.size
-            |> Collage.filled color
-            |> Collage.move ( x, y )
 
 
 intro : Html msg
@@ -140,6 +60,36 @@ intro =
             , text "Tip: Keep your metabilism cranking, it will help you survive."
             ]
         , controls
+        , playGif
+        ]
+
+
+paused : Culture -> Html Msg
+paused culture =
+    centered []
+        [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
+        , View.Game.view culture
+        , pauseText
+        ]
+
+
+pauseText : Html msg
+pauseText =
+    div [ class "paused" ] [ text "Paused" ]
+
+
+playing : Culture -> Html Msg
+playing culture =
+    centered []
+        [ div [] [ Html.button [ onClick End ] [ text "End" ] ]
+        , View.Game.view culture
+        ]
+
+
+gameOver : Int -> Html msg
+gameOver score =
+    centered []
+        [ text <| "Game over, your score was : " ++ (toString score)
         , playGif
         ]
 
